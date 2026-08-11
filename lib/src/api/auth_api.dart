@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:c2c_kit_flutter/c2c_kit_flutter.dart';
 import 'package:http/http.dart' as http;
 
 import '../../constants/app_ids.dart';
@@ -113,14 +114,7 @@ class AuthApi {
     }
 
     try {
-      return LoginSuccess(
-        AuthTokens.fromJson(Map<String, dynamic>.from(data)),
-        data['user_data_for_registration'] is Map
-            ? Map<String, dynamic>.from(
-                data['user_data_for_registration'] as Map,
-              )
-            : null,
-      );
+      return LoginSuccess(AuthTokens.fromJson(Map<String, dynamic>.from(data)));
     } catch (_) {
       return const LoginFailure(message: 'Missing tokens in login response');
     }
@@ -150,14 +144,7 @@ class AuthApi {
     }
 
     try {
-      return LoginSuccess(
-        AuthTokens.fromJson(Map<String, dynamic>.from(data)),
-        data['user_data_for_registration'] is Map
-            ? Map<String, dynamic>.from(
-                data['user_data_for_registration'] as Map,
-              )
-            : null,
-      );
+      return LoginSuccess(AuthTokens.fromJson(Map<String, dynamic>.from(data)));
     } catch (_) {
       return const LoginFailure(
         message: 'Missing tokens in 2FA verify response',
@@ -262,5 +249,24 @@ class AuthApi {
       path: '/refresh',
       body: {'refresh_token': refreshToken},
     );
+  }
+
+  static Future<UserCloudModel?> getCloudUserData({
+    required C2cApp app,
+    required String accessToken,
+  }) {
+    return post(app: app, path: '/get_user_data', accessToken: accessToken)
+        .then((value) {
+          try {
+            return UserCloudModel.fromJson(value.data);
+          } catch (_) {
+            return null;
+          }
+        })
+        .catchError((e, x) {
+          log(e.toString());
+          log(x.toString());
+          return null;
+        });
   }
 }

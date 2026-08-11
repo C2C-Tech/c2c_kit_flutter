@@ -30,12 +30,7 @@ class C2cLoginView extends StatefulWidget {
 
   final C2cApp app;
   final Locale locale;
-  final Future<void> Function(
-    AuthTokens tokens,
-    Map<String, dynamic>? userDataForRegistration,
-    String email,
-  )
-  onSuccess;
+  final Future<void> Function(AuthTokens tokens, String email) onSuccess;
 
   final VoidCallback? onForgotPassword;
   final VoidCallback? onSignUp;
@@ -92,8 +87,8 @@ class _C2cLoginViewState extends State<C2cLoginView> {
       if (!mounted) return;
 
       switch (result) {
-        case LoginSuccess(:final tokens, :final userDataForRegistration):
-          await widget.onSuccess(tokens, userDataForRegistration, email);
+        case LoginSuccess(:final tokens):
+          await widget.onSuccess(tokens, email);
         case LoginRequires2Fa challenge:
           final loginSucess = await C2cLoginTwoFaView.show(
             context,
@@ -104,11 +99,7 @@ class _C2cLoginViewState extends State<C2cLoginView> {
             email: email,
           );
           if (loginSucess != null && mounted) {
-            await widget.onSuccess(
-              loginSucess.tokens,
-              loginSucess.userDataForRegistration,
-              email,
-            );
+            await widget.onSuccess(loginSucess.tokens, email);
           }
 
         case LoginFailure(:final message):
@@ -228,12 +219,7 @@ class C2cLoginScreen extends StatelessWidget {
 
   final C2cApp app;
   final Locale locale;
-  final Future<void> Function(
-    AuthTokens authTokens,
-    Map<String, dynamic>? userDataForRegistration,
-    String email,
-  )
-  onSuccess;
+  final Future<void> Function(AuthTokens authTokens, String email) onSuccess;
 
   final VoidCallback? onForgotPassword;
   final VoidCallback? onSignUp;

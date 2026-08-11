@@ -4,6 +4,7 @@ library;
 // Auth API
 export 'src/api/auth_api.dart';
 export 'src/api/models.dart';
+export 'src/api/user_cloud_model.dart';
 
 // Constants
 export 'constants/app_ids.dart';

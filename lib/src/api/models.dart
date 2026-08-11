@@ -63,9 +63,8 @@ sealed class LoginResult {
 }
 
 class LoginSuccess extends LoginResult {
-  const LoginSuccess(this.tokens, this.userDataForRegistration);
+  const LoginSuccess(this.tokens);
   final AuthTokens tokens;
-  final Map<String, dynamic>? userDataForRegistration;
 }
 
 class LoginRequires2Fa extends LoginResult {
