@@ -258,7 +258,7 @@ class AuthApi {
     return post(app: app, path: '/get_user_data', accessToken: accessToken)
         .then((value) {
           try {
-            return UserCloudModel.fromJson(value.data);
+            return UserCloudModel.fromJson(value.data["response"]);
           } catch (_) {
             return null;
           }
