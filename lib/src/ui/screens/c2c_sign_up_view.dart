@@ -170,6 +170,7 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
       "gender": _gender == 'Herr' ? 'Male' : 'Female',
       'birthdate': _formattedBirthDate(),
       'birthplace': _birthPlaceController.text.trim(),
+      'role': "user",
     };
 
     return enteredCode == null ? body : {...body, 'code': enteredCode};

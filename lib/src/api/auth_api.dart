@@ -251,6 +251,52 @@ class AuthApi {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Forgot / Reset password
+  // ---------------------------------------------------------------------------
+
+  /// Sends a recovery verification code to [email].
+  static Future<ApiResponse> forgotPassword({
+    required C2cApp app,
+    required String email,
+  }) {
+    return post(app: app, path: '/forgotpwd', body: {'email': email});
+  }
+
+  /// Validates the recovery [code] for the given [email].
+  static Future<ApiResponse> verifyRecoveryCode({
+    required C2cApp app,
+    required String email,
+    required String code,
+  }) {
+    return post(
+      app: app,
+      path: '/verify_code',
+      body: {'email': email, 'code': code},
+    );
+  }
+
+  /// Resets the password for [email] using the verified [otp].
+  static Future<ApiResponse> resetPassword({
+    required C2cApp app,
+    required String email,
+    required String otp,
+    required String password,
+  }) {
+    return post(
+      app: app,
+      path: '/resetpwd',
+      body: {'email': email, 'otp': otp, 'password': password},
+    );
+  }
+
+  ///
+  ///
+  /// User Cloud Data
+  ///
+  ///
+  ///
+
   static Future<UserCloudModel?> getCloudUserData({
     required C2cApp app,
     required String accessToken,

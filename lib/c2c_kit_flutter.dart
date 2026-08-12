@@ -14,6 +14,7 @@ export 'constants/dimensions.dart';
 // Auth UI
 export 'src/ui/l10n/kit_l10n.dart';
 export 'src/ui/screens/c2c_login_view.dart';
+export 'src/ui/screens/c2c_forgot_password_view.dart';
 export 'src/ui/screens/c2c_sign_up_view.dart';
 export 'src/ui/screens/c2c_two_fa_setup_view.dart';
 export 'src/ui/widgets/c2c_logo.dart';

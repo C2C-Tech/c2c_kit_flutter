@@ -129,6 +129,29 @@ class KitL10n {
   String get initializationFailed =>
       _t('Registration could not be started.', 'Registrierung konnte nicht gestartet werden.');
 
+  // Forgot / Reset password
+  String get resetPassword => _t('Reset Password', 'Passwort zurücksetzen');
+  String get newPassword => _t('New Password', 'Neues Passwort');
+  String get confirmNewPassword =>
+      _t('Confirm New Password', 'Neues Passwort bestätigen');
+  String get sendCode => _t('Send Code', 'Code senden');
+  String get verifyCode => _t('Verify Code', 'Code verifizieren');
+  String get forgotPasswordTitle =>
+      _t('Forgot Password', 'Passwort vergessen');
+  String get forgotPasswordSubtitle => _t(
+        'Enter your email address and we will send you a verification code.',
+        'Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Verifizierungscode.',
+      );
+  String get codeSent =>
+      _t('Verification code sent', 'Verifizierungscode gesendet');
+  String get codeVerified =>
+      _t('Code verified successfully', 'Code erfolgreich verifiziert');
+  String get passwordResetSuccess => _t(
+        'Password reset successfully',
+        'Passwort erfolgreich zurückgesetzt',
+      );
+  String get backToLogin => _t('Back to Login', 'Zurück zur Anmeldung');
+
   String fieldRequired(String field) => isGerman
       ? 'Bitte $field eingeben'
       : 'Please enter $field';
