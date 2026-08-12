@@ -10,6 +10,7 @@ class UserCloudModel {
     required this.surname,
     required this.role,
     required this.createdAt,
+    this.password,
     this.birthdate,
     this.birthplace,
     this.city,
@@ -30,6 +31,7 @@ class UserCloudModel {
   final String surname;
   final String role;
   final String createdAt;
+  final String? password;
 
   final String? birthdate;
   final String? birthplace;
@@ -52,6 +54,7 @@ class UserCloudModel {
       surname: json['surname']?.toString() ?? '',
       role: json['role']?.toString() ?? '',
       createdAt: json['created_at']?.toString() ?? '',
+      password: _asNullableString(json['password']),
       birthdate: _asNullableString(json['birthdate']),
       birthplace: _asNullableString(json['birthplace']),
       city: _asNullableString(json['city']),
@@ -77,6 +80,7 @@ class UserCloudModel {
       'surname': surname,
       'role': role,
       'created_at': createdAt,
+      'password': password,
       'birthdate': birthdate,
       'birthplace': birthplace,
       'city': city,
@@ -105,6 +109,7 @@ class UserCloudModel {
       'gender': gender,
       'birthdate': birthdate,
       'birthplace': birthplace,
+      'password': password,
     };
   }
 }
