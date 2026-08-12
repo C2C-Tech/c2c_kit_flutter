@@ -110,6 +110,7 @@ class UserCloudModel {
       'birthdate': birthdate,
       'birthplace': birthplace,
       'password': password,
+      'role': role,
     };
   }
 }
