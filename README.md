@@ -105,6 +105,10 @@ AuthApi.enable2Fa(app: app, accessToken: a, method: m, code: c);
 AuthApi.disable2Fa(app: app, accessToken: a, code: c);
 AuthApi.refreshAccessToken(app: app, refreshToken: r);
 
+AuthApi.forgotPassword(app: app, email: e);
+AuthApi.verifyRecoveryCode(app: app, email: e, code: c);
+AuthApi.resetPassword(app: app, email: e, otp: o, password: p);
+
 AuthApi.post(app: app, path: '/custom', body: {}, accessToken: a); // low-level
 ```
 
@@ -120,7 +124,6 @@ Locale defaults to **German** (`KitL10n.defaultLocale`). Pass `locale: Locale('e
 ```dart
 C2cLoginScreen(
   app: C2cApp.maintenance,
-  onForgotPassword: () => ...,
   onSignUp: () => ...,
   onSuccess: (tokens, email) async {
     await saveTokens(tokens); // app storage
@@ -130,7 +133,9 @@ C2cLoginScreen(
 
 Uses the built-in kit logo (`C2cLogo` / `assets/c2c_logo.png`).
 
-Handles login 2FA internally (`C2cLoginTwoFaView`). Use `C2cLoginView` if you only need the form body.
+Handles login 2FA internally (`C2cLoginTwoFaView`) and forgot password
+(`C2cForgotPasswordScreen`) — no host callback needed. Use `C2cLoginView` if
+you only need the form body.
 
 ### Sign-up
 
@@ -163,3 +168,19 @@ showC2cTwoFaSetup(
 
 Widgets: `CustomButton`, `CustomTextField`, `CustomAppBar`, `CustomSectionTitle`, `showCustomMessage`  
 Constants: `AppColors`, `AppDimensions`
+
+
+### Forgot password
+
+Handled from login via **Forgot Password?** → `C2cForgotPasswordScreen`
+(email → OTP → new password). You can also push it yourself:
+
+```dart
+C2cForgotPasswordScreen(
+  app: C2cApp.maintenance,
+  initialEmail: email,
+  onSuccess: () => Navigator.pop(context),
+)
+```
+
+TODO: implement token refreshing ...

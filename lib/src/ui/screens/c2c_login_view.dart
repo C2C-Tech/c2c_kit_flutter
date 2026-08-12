@@ -14,6 +14,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_message.dart';
 import '../widgets/custom_section_title.dart';
 import '../widgets/custom_text_field.dart';
+import 'c2c_forgot_password_view.dart';
 
 /// Reusable login form. Host apps wrap this in their own route.
 class C2cLoginView extends StatefulWidget {
@@ -22,7 +23,6 @@ class C2cLoginView extends StatefulWidget {
     required this.app,
     required this.onSuccess,
     this.locale = KitL10n.defaultLocale,
-    this.onForgotPassword,
     this.onSignUp,
     this.initialEmail,
     this.isDebugMode = false,
@@ -32,7 +32,6 @@ class C2cLoginView extends StatefulWidget {
   final Locale locale;
   final Future<void> Function(AuthTokens tokens, String email) onSuccess;
 
-  final VoidCallback? onForgotPassword;
   final VoidCallback? onSignUp;
   final String? initialEmail;
 
@@ -68,6 +67,24 @@ class _C2cLoginViewState extends State<C2cLoginView> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _openForgotPassword() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => C2cForgotPasswordScreen(
+          app: widget.app,
+          locale: widget.locale,
+          initialEmail: _emailController.text.trim().isEmpty
+              ? null
+              : _emailController.text.trim(),
+          onSuccess: () {
+            if (!context.mounted) return;
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _submit() async {
@@ -169,21 +186,20 @@ class _C2cLoginViewState extends State<C2cLoginView> {
             ],
           ),
         ),
-        if (widget.onForgotPassword != null)
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: widget.onForgotPassword,
-              child: Text(
-                l10n.forgotPassword,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: KitColors.primary,
-                ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: _loading ? null : _openForgotPassword,
+            child: Text(
+              l10n.forgotPassword,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: KitColors.primary,
               ),
             ),
           ),
+        ),
         const SizedBox(height: 16),
         CustomButton(
           label: l10n.login,
@@ -210,7 +226,6 @@ class C2cLoginScreen extends StatelessWidget {
     required this.app,
     required this.onSuccess,
     this.locale = KitL10n.defaultLocale,
-    this.onForgotPassword,
     this.onSignUp,
     this.initialEmail,
     this.isDebugMode = false,
@@ -221,7 +236,6 @@ class C2cLoginScreen extends StatelessWidget {
   final Locale locale;
   final Future<void> Function(AuthTokens authTokens, String email) onSuccess;
 
-  final VoidCallback? onForgotPassword;
   final VoidCallback? onSignUp;
   final String? initialEmail;
   final bool isDebugMode;
@@ -235,7 +249,6 @@ class C2cLoginScreen extends StatelessWidget {
         app: app,
         locale: locale,
         onSuccess: onSuccess,
-        onForgotPassword: onForgotPassword,
         onSignUp: onSignUp,
         initialEmail: initialEmail,
         isDebugMode: isDebugMode,
