@@ -175,6 +175,7 @@ class _C2cForgotPasswordViewState extends State<C2cForgotPasswordView> {
 
     return C2cAuthShell(
       app: widget.app,
+      locale: widget.locale,
       compactHeader: true,
       title: l10n.forgotPasswordTitle,
       child: Column(

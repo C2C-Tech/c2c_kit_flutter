@@ -135,8 +135,9 @@ class _C2cLoginViewState extends State<C2cLoginView> {
 
     return C2cAuthShell(
       app: widget.app,
+      locale: widget.locale,
       title: l10n.welcomeTo(widget.app.name),
-      subtitle: widget.app.punchLine,
+      subtitle: widget.app.punchLine(widget.locale),
       child: KitSurfaceCard(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -377,6 +378,7 @@ class _C2cLoginTwoFaViewState extends State<C2cLoginTwoFaView> {
         if (!widget.isDialog) ...[
           C2cBrandHeader(
             app: widget.app,
+            locale: widget.locale,
             title: l10n.twoFactorAuth,
             compact: true,
           ),

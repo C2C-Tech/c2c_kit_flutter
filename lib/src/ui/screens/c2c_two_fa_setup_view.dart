@@ -327,6 +327,7 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
         if (!widget.isDialog) ...[
           C2cBrandHeader(
             app: widget.app,
+            locale: widget.locale,
             title: _l10n.twoFactorAuth,
             compact: true,
           ),

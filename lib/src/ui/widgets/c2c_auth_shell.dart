@@ -5,6 +5,7 @@ import '../../../constants/apps.dart';
 import '../../../constants/colors.dart';
 import '../../../constants/dimensions.dart';
 import '../../../constants/extras.dart';
+import '../l10n/kit_l10n.dart';
 import 'c2c_brand_header.dart';
 
 /// Shared auth page chrome: glow, padding, and a centered max-width column.
@@ -13,6 +14,7 @@ class C2cAuthShell extends StatelessWidget {
     super.key,
     required this.app,
     required this.child,
+    this.locale = KitL10n.defaultLocale,
     this.title,
     this.subtitle,
     this.compactHeader = false,
@@ -21,6 +23,7 @@ class C2cAuthShell extends StatelessWidget {
 
   final C2cApp app;
   final Widget child;
+  final Locale locale;
   final String? title;
   final String? subtitle;
   final bool compactHeader;
@@ -65,6 +68,7 @@ class C2cAuthShell extends StatelessWidget {
                   if (showHeader) ...[
                     C2cBrandHeader(
                       app: app,
+                      locale: locale,
                       title: title,
                       subtitle: subtitle,
                       compact: compactHeader,

@@ -330,6 +330,7 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
 
     return C2cAuthShell(
       app: widget.app,
+      locale: widget.locale,
       title: l10n.createAccount,
       subtitle: l10n.createAccountSubtitle,
       compactHeader: true,

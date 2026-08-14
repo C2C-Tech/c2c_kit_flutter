@@ -5,26 +5,39 @@ const String otpCodeHASH =
 
 enum C2cApp {
   maintenance(
-    name: 'Maintenance',
+    name: 'Handwerker',
     logoPath: 'assets/maintenance_icon.png',
-    punchLine: 'Keep every asset running.',
+    punchLineEn: 'Keep every asset running.',
+    punchLineDe: 'Jedes Asset stets in Betrieb.',
   ),
   ppm(
-    name: 'PPM',
+    name: 'Immobilienverwaltung',
     logoPath: 'assets/ppm_icon.png',
-    punchLine: 'Plan, prevent, maintain.',
+    punchLineEn: 'Plan, prevent, maintain.',
+    punchLineDe: 'Planen, vorbeugen, instandhalten.',
   ),
   authenticator(
     name: 'Authenticator',
     logoPath: 'assets/authenticator_icon.png',
-    punchLine: 'Secure access to your C2C apps.',
+    punchLineEn: 'Secure access to your C2C apps.',
+    punchLineDe: 'Sicherer Zugriff auf Ihre C2C-Apps.',
   );
 
-  const C2cApp({required this.name, this.logoPath, this.punchLine});
+  const C2cApp({
+    required this.name,
+    this.logoPath,
+    required this.punchLineEn,
+    required this.punchLineDe,
+  });
 
   final String name;
   final String? logoPath;
-  final String? punchLine;
+  final String punchLineEn;
+  final String punchLineDe;
+
+  /// German unless [locale] language is explicitly English.
+  String punchLine(Locale locale) =>
+      locale.languageCode.toLowerCase() == 'en' ? punchLineEn : punchLineDe;
 
   IconData get fallbackIcon => switch (this) {
     C2cApp.maintenance => Icons.handyman_outlined,

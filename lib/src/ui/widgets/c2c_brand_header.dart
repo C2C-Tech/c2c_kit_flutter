@@ -5,6 +5,7 @@ import '../../../constants/apps.dart';
 import '../../../constants/colors.dart';
 import '../../../constants/dimensions.dart';
 import '../../../constants/extras.dart';
+import '../l10n/kit_l10n.dart';
 import 'c2c_app_logo.dart';
 import 'c2c_logo.dart';
 
@@ -13,12 +14,14 @@ class C2cBrandHeader extends StatelessWidget {
   const C2cBrandHeader({
     super.key,
     required this.app,
+    this.locale = KitL10n.defaultLocale,
     this.title,
     this.subtitle,
     this.compact = false,
   });
 
   final C2cApp app;
+  final Locale locale;
   final String? title;
   final String? subtitle;
   final bool compact;
@@ -121,10 +124,10 @@ class C2cBrandHeader extends StatelessWidget {
                     color: KitColors.textPrimary,
                   ),
                 ),
-                if (app.punchLine != null) ...[
+                if (app.punchLine(locale).isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
-                    app.punchLine!,
+                    app.punchLine(locale),
                     style: const TextStyle(
                       fontSize: 13,
                       height: 1.3,
@@ -159,10 +162,10 @@ class C2cBrandHeader extends StatelessWidget {
                     color: KitColors.textPrimary,
                   ),
                 ),
-                if (title != null || app.punchLine != null) ...[
+                if (title != null || app.punchLine(locale).isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
-                    title ?? app.punchLine!,
+                    title ?? app.punchLine(locale),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
