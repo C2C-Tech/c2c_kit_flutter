@@ -7,9 +7,10 @@ export 'src/api/models.dart';
 export 'src/api/user_cloud_model.dart';
 
 // Constants
-export 'constants/app_ids.dart';
+export 'constants/apps.dart';
 export 'constants/colors.dart';
 export 'constants/dimensions.dart';
+export 'constants/extras.dart';
 
 // Auth UI
 export 'src/ui/l10n/kit_l10n.dart';
@@ -17,6 +18,8 @@ export 'src/ui/screens/c2c_login_view.dart';
 export 'src/ui/screens/c2c_forgot_password_view.dart';
 export 'src/ui/screens/c2c_sign_up_view.dart';
 export 'src/ui/screens/c2c_two_fa_setup_view.dart';
+export 'src/ui/widgets/c2c_app_logo.dart';
+export 'src/ui/widgets/c2c_brand_header.dart';
 export 'src/ui/widgets/c2c_logo.dart';
 export 'src/ui/widgets/custom_app_bar.dart';
 export 'src/ui/widgets/custom_button.dart';

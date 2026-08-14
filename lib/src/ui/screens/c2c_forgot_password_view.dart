@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
 
-import '../../../constants/app_ids.dart';
+import '../../../constants/apps.dart';
 import '../../../constants/colors.dart';
 import '../../../constants/dimensions.dart';
 import '../../api/auth_api.dart';
 import '../l10n/kit_l10n.dart';
-import '../widgets/c2c_logo.dart';
+import '../widgets/c2c_auth_shell.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_message.dart';
 import '../widgets/custom_section_title.dart';
 import '../widgets/custom_text_field.dart';
+import '../widgets/kit_pin_field.dart';
+import '../widgets/kit_step_progress.dart';
+import '../widgets/kit_surface_card.dart';
 
 /// Three-step forgot-password flow:
 ///
@@ -164,21 +166,31 @@ class _C2cForgotPasswordViewState extends State<C2cForgotPasswordView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(AppDimensions.contentPadding(context)),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: AppDimensions.maxFormWidth,
-            ),
-            child: switch (_step) {
-              _Step.email => _buildEmailStep(),
-              _Step.otp => _buildOtpStep(),
-              _Step.newPassword => _buildNewPasswordStep(),
-            },
+    final l10n = _l10n;
+    final stepIndex = switch (_step) {
+      _Step.email => 0,
+      _Step.otp => 1,
+      _Step.newPassword => 2,
+    };
+
+    return C2cAuthShell(
+      app: widget.app,
+      compactHeader: true,
+      title: l10n.forgotPasswordTitle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          KitStepProgress(
+            labels: [l10n.email, l10n.stepCode, l10n.password],
+            currentIndex: stepIndex,
           ),
-        ),
+          const SizedBox(height: AppDimensions.spacing24),
+          switch (_step) {
+            _Step.email => _buildEmailStep(),
+            _Step.otp => _buildOtpStep(),
+            _Step.newPassword => _buildNewPasswordStep(),
+          },
+        ],
       ),
     );
   }
@@ -190,37 +202,37 @@ class _C2cForgotPasswordViewState extends State<C2cForgotPasswordView> {
 
     return Form(
       key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Center(child: C2cLogo()),
-          const SizedBox(height: 24),
-          CustomSectionTitle(
-            title: l10n.forgotPasswordTitle,
-            subtitle: l10n.forgotPasswordSubtitle,
-          ),
-          const SizedBox(height: 24),
-          CustomTextField(
-            label: l10n.emailAddress,
-            l10n: l10n,
-            controller: _emailController,
-            prefixIcon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return l10n.fieldRequired(l10n.emailAddress);
-              }
-              if (!value.contains('@')) return l10n.invalidEmail;
-              return null;
-            },
-          ),
-          const SizedBox(height: 24),
-          CustomButton(
-            label: l10n.sendCode,
-            isLoading: _loading,
-            onPressed: _loading ? null : _sendCode,
-          ),
-        ],
+      child: KitSurfaceCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CustomSectionTitle(
+              title: l10n.forgotPasswordTitle,
+              subtitle: l10n.forgotPasswordSubtitle,
+            ),
+            const SizedBox(height: AppDimensions.spacing24),
+            CustomTextField(
+              label: l10n.emailAddress,
+              l10n: l10n,
+              controller: _emailController,
+              prefixIcon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return l10n.fieldRequired(l10n.emailAddress);
+                }
+                if (!value.contains('@')) return l10n.invalidEmail;
+                return null;
+              },
+            ),
+            const SizedBox(height: AppDimensions.spacing24),
+            CustomButton(
+              label: l10n.sendCode,
+              isLoading: _loading,
+              onPressed: _loading ? null : _sendCode,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -230,48 +242,27 @@ class _C2cForgotPasswordViewState extends State<C2cForgotPasswordView> {
   Widget _buildOtpStep() {
     final l10n = _l10n;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Center(child: C2cLogo()),
-        const SizedBox(height: 24),
-        CustomSectionTitle(
-          title: l10n.codeVerification,
-          subtitle: l10n.emailVerificationMessage(
-            _emailController.text.trim(),
+    return KitSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CustomSectionTitle(
+            title: l10n.codeVerification,
+            subtitle: l10n.emailVerificationMessage(_emailController.text.trim()),
           ),
-        ),
-        const SizedBox(height: AppDimensions.spacing24),
-        MaterialPinField(
-          length: _otpLength,
-          keyboardType: TextInputType.number,
-          onChanged: (value) => _otp = value,
-          theme: MaterialPinTheme(
-            cellSize: const Size(45, 55),
-            fillColor: KitColors.surface,
-            filledFillColor: KitColors.surface,
-            focusedFillColor: KitColors.primary.withValues(alpha: 0.2),
-            spacing: 10,
-            borderRadius: BorderRadius.circular(AppDimensions.radius12),
-            borderColor: KitColors.primary,
-            focusedBorderColor: KitColors.primary,
-            filledBorderColor: KitColors.primary,
-            borderWidth: 2,
-            focusedBorderWidth: 2.5,
-            textStyle: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: KitColors.primary,
-            ),
+          const SizedBox(height: AppDimensions.spacing24),
+          KitPinField(
+            length: _otpLength,
+            onChanged: (value) => _otp = value,
           ),
-        ),
-        const SizedBox(height: AppDimensions.spacing24),
-        CustomButton(
-          label: l10n.verifyCode,
-          isLoading: _loading,
-          onPressed: _loading ? null : _verifyCode,
-        ),
-      ],
+          const SizedBox(height: AppDimensions.spacing24),
+          CustomButton(
+            label: l10n.verifyCode,
+            isLoading: _loading,
+            onPressed: _loading ? null : _verifyCode,
+          ),
+        ],
+      ),
     );
   }
 
@@ -282,51 +273,48 @@ class _C2cForgotPasswordViewState extends State<C2cForgotPasswordView> {
 
     return Form(
       key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Center(child: C2cLogo()),
-          const SizedBox(height: 24),
-          CustomSectionTitle(
-            title: l10n.resetPassword,
-            subtitle: '',
-          ),
-          const SizedBox(height: 24),
-          CustomTextField(
-            label: l10n.newPassword,
-            l10n: l10n,
-            controller: _passwordController,
-            prefixIcon: Icons.lock_outline,
-            obscureText: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return l10n.fieldRequired(l10n.newPassword);
-              }
-              if (value.length < 8) return l10n.passwordTooShort;
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          CustomTextField(
-            label: l10n.confirmNewPassword,
-            l10n: l10n,
-            controller: _confirmController,
-            prefixIcon: Icons.lock_outline,
-            obscureText: true,
-            validator: (value) {
-              if (value != _passwordController.text) {
-                return l10n.passwordsDoNotMatch;
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 24),
-          CustomButton(
-            label: l10n.resetPassword,
-            isLoading: _loading,
-            onPressed: _loading ? null : _resetPassword,
-          ),
-        ],
+      child: KitSurfaceCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CustomSectionTitle(title: l10n.resetPassword, subtitle: ''),
+            const SizedBox(height: AppDimensions.spacing24),
+            CustomTextField(
+              label: l10n.newPassword,
+              l10n: l10n,
+              controller: _passwordController,
+              prefixIcon: Icons.lock_outline,
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return l10n.fieldRequired(l10n.newPassword);
+                }
+                if (value.length < 8) return l10n.passwordTooShort;
+                return null;
+              },
+            ),
+            const SizedBox(height: AppDimensions.spacing16),
+            CustomTextField(
+              label: l10n.confirmNewPassword,
+              l10n: l10n,
+              controller: _confirmController,
+              prefixIcon: Icons.lock_outline,
+              obscureText: true,
+              validator: (value) {
+                if (value != _passwordController.text) {
+                  return l10n.passwordsDoNotMatch;
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: AppDimensions.spacing24),
+            CustomButton(
+              label: l10n.resetPassword,
+              isLoading: _loading,
+              onPressed: _loading ? null : _resetPassword,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -352,7 +340,7 @@ class C2cForgotPasswordScreen extends StatelessWidget {
     final l10n = KitL10n(locale);
     return Scaffold(
       backgroundColor: KitColors.background,
-      appBar: CustomAppBar(title: l10n.forgotPasswordTitle),
+      appBar: CustomAppBar(title: l10n.forgotPasswordTitle, app: app),
       body: C2cForgotPasswordView(
         app: app,
         locale: locale,

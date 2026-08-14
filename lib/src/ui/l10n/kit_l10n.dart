@@ -17,7 +17,17 @@ class KitL10n {
 
   String _t(String en, String de) => isGerman ? de : en;
 
-  String get continueSignIn => _t('Sign-In', 'Anmelden');
+  String get continueSignIn => _t('Sign in', 'Anmelden');
+  String welcomeTo(String appName) =>
+      isGerman ? 'Willkommen bei $appName' : 'Welcome to $appName';
+  String get createAccountSubtitle => _t(
+        'Fill in your details to create your C2C account.',
+        'Geben Sie Ihre Daten ein, um Ihr C2C-Konto zu erstellen.',
+      );
+  String get personalDetails => _t('Personal details', 'Persönliche Daten');
+  String get address => _t('Address', 'Adresse');
+  String get accountCredentials => _t('Account', 'Zugangsdaten');
+  String get stepCode => _t('Code', 'Code');
   String get email => _t('Email', 'E-Mail');
   String get emailAddress => _t('Email Address', 'E-Mail-Adresse');
   String get password => _t('Password', 'Passwort');

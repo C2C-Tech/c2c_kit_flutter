@@ -1,19 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../../constants/app_ids.dart';
+import '../../../constants/apps.dart';
 import '../../../constants/colors.dart';
 import '../../../constants/dimensions.dart';
 import '../../api/auth_api.dart';
 import '../../api/models.dart';
 import '../l10n/kit_l10n.dart';
+import '../widgets/c2c_brand_header.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_message.dart';
 import '../widgets/custom_section_title.dart';
+import '../widgets/kit_pin_field.dart';
+import '../widgets/kit_surface_card.dart';
 
 enum _TwoFaStage { methodSelection, totpSetup, enterCode }
 
@@ -71,7 +73,7 @@ Future<bool?> showC2cTwoFaSetup(
     MaterialPageRoute(
       builder: (_) => Scaffold(
         backgroundColor: KitColors.background,
-        appBar: CustomAppBar(title: l10n.twoFactorAuth),
+        appBar: CustomAppBar(title: l10n.twoFactorAuth, app: app),
         body: SafeArea(child: view),
       ),
     ),
@@ -276,7 +278,11 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
           Container(
             padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: KitColors.divider)),
+              border: Border(
+                bottom: BorderSide(
+                  color: KitColors.primary.withValues(alpha: 0.08),
+                ),
+              ),
             ),
             child: Row(
               children: [
@@ -318,120 +324,152 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        CustomSectionTitle(
-          title: _l10n.twoFaChooseMethod,
-          subtitle: _l10n.twoFaChooseMethodSubtitle,
-        ),
-        const SizedBox(height: AppDimensions.spacing24),
-        _MethodCard(
-          icon: Icons.phonelink_lock_outlined,
-          title: _l10n.twoFaAuthenticatorApp,
-          subtitle: _l10n.twoFaAuthenticatorAppSubtitle,
-          onTap: _loading ? null : () => _onSelectMethod(TwoFaMethod.totp),
-        ),
-        const SizedBox(height: AppDimensions.spacing12),
-        _MethodCard(
-          icon: Icons.email_outlined,
-          title: _l10n.twoFaEmailMethod,
-          subtitle: _l10n.twoFaEmailMethodSubtitle,
-          onTap: _loading ? null : () => _onSelectMethod(TwoFaMethod.email),
+        if (!widget.isDialog) ...[
+          C2cBrandHeader(
+            app: widget.app,
+            title: _l10n.twoFactorAuth,
+            compact: true,
+          ),
+          const SizedBox(height: AppDimensions.spacing24),
+        ],
+        KitSurfaceCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomSectionTitle(
+                title: _l10n.twoFaChooseMethod,
+                subtitle: _l10n.twoFaChooseMethodSubtitle,
+              ),
+              const SizedBox(height: AppDimensions.spacing24),
+              _MethodCard(
+                icon: Icons.phonelink_lock_outlined,
+                title: _l10n.twoFaAuthenticatorApp,
+                subtitle: _l10n.twoFaAuthenticatorAppSubtitle,
+                onTap: _loading
+                    ? null
+                    : () => _onSelectMethod(TwoFaMethod.totp),
+              ),
+              const SizedBox(height: AppDimensions.spacing12),
+              _MethodCard(
+                icon: Icons.email_outlined,
+                title: _l10n.twoFaEmailMethod,
+                subtitle: _l10n.twoFaEmailMethodSubtitle,
+                onTap: _loading
+                    ? null
+                    : () => _onSelectMethod(TwoFaMethod.email),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildTotpSetup() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        CustomSectionTitle(
-          title: _l10n.twoFaScanQrTitle,
-          subtitle: _l10n.twoFaScanQrSubtitle,
-        ),
-        const SizedBox(height: AppDimensions.spacing24),
-        if (_provisioningUri != null)
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(AppDimensions.radius16),
-                border: Border.all(color: KitColors.border),
-              ),
-              child: QrImageView(
-                data: _provisioningUri!,
-                size: 200,
-                backgroundColor: Colors.white,
+    return KitSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CustomSectionTitle(
+            title: _l10n.twoFaScanQrTitle,
+            subtitle: _l10n.twoFaScanQrSubtitle,
+          ),
+          const SizedBox(height: AppDimensions.spacing24),
+          if (_provisioningUri != null)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppDimensions.radius16),
+                  border: Border.all(
+                    color: KitColors.primary.withValues(alpha: 0.12),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: KitColors.primary.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: QrImageView(
+                  data: _provisioningUri!,
+                  size: 200,
+                  backgroundColor: Colors.white,
+                ),
               ),
             ),
-          ),
-        if (_totpSecret != null) ...[
-          const SizedBox(height: AppDimensions.spacing16),
-          Text(
-            _l10n.twoFaManualSecret,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: KitColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacing8),
-          InkWell(
-            onTap: _copySecret,
-            borderRadius: BorderRadius.circular(AppDimensions.radius12),
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacing16),
-              decoration: BoxDecoration(
-                color: KitColors.surface,
-                borderRadius: BorderRadius.circular(AppDimensions.radius12),
-                border: Border.all(color: KitColors.border),
+          if (_totpSecret != null) ...[
+            const SizedBox(height: AppDimensions.spacing16),
+            Text(
+              _l10n.twoFaManualSecret,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: KitColors.textPrimary,
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SelectableText(
-                      _totpSecret!,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: KitColors.textPrimary,
+            ),
+            const SizedBox(height: AppDimensions.spacing8),
+            InkWell(
+              onTap: _copySecret,
+              borderRadius: BorderRadius.circular(AppDimensions.radius12),
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.spacing16),
+                decoration: BoxDecoration(
+                  color: KitColors.primaryMuted,
+                  borderRadius: BorderRadius.circular(AppDimensions.radius12),
+                  border: Border.all(
+                    color: KitColors.primary.withValues(alpha: 0.12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SelectableText(
+                        _totpSecret!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: KitColors.textPrimary,
+                        ),
                       ),
                     ),
-                  ),
-                  Icon(
-                    Icons.copy_rounded,
-                    size: 18,
-                    color: KitColors.primary.withValues(alpha: 0.8),
-                  ),
-                ],
+                    Icon(
+                      Icons.copy_rounded,
+                      size: 18,
+                      color: KitColors.primary.withValues(alpha: 0.8),
+                    ),
+                  ],
+                ),
               ),
             ),
+          ],
+          const SizedBox(height: AppDimensions.spacing24),
+          CustomButton(
+            label: _l10n.continueLabel,
+            onPressed: () {
+              setState(() {
+                _otp = '';
+                _stage = _TwoFaStage.enterCode;
+              });
+            },
+          ),
+          const SizedBox(height: AppDimensions.spacing12),
+          CustomButton(
+            label: _l10n.cancel,
+            isOutlined: true,
+            onPressed: () {
+              setState(() {
+                _selectedMethod = null;
+                _totpSecret = null;
+                _provisioningUri = null;
+                _stage = _TwoFaStage.methodSelection;
+              });
+            },
           ),
         ],
-        const SizedBox(height: AppDimensions.spacing24),
-        CustomButton(
-          label: _l10n.continueLabel,
-          onPressed: () {
-            setState(() {
-              _otp = '';
-              _stage = _TwoFaStage.enterCode;
-            });
-          },
-        ),
-        const SizedBox(height: AppDimensions.spacing12),
-        CustomButton(
-          label: _l10n.cancel,
-          isOutlined: true,
-          onPressed: () {
-            setState(() {
-              _selectedMethod = null;
-              _totpSecret = null;
-              _provisioningUri = null;
-              _stage = _TwoFaStage.methodSelection;
-            });
-          },
-        ),
-      ],
+      ),
     );
   }
 
@@ -440,79 +478,62 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
 
     final l10n = _l10n;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        CustomSectionTitle(
-          title: _isDisabling ? l10n.twoFaDisableTitle : l10n.codeVerification,
-          subtitle: _isDisabling
-              ? (isEmail
+    return KitSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CustomSectionTitle(
+            title: _isDisabling ? l10n.twoFaDisableTitle : l10n.codeVerification,
+            subtitle: _isDisabling
+                ? (isEmail
                     ? l10n.twoFaDisableEmailSubtitle
                     : l10n.twoFaDisableTotpSubtitle)
-              : (isEmail
+                : (isEmail
                     ? l10n.enterEmailCodeSubtitle(widget.userEmail)
                     : l10n.twoFaEnterTotpCodeSubtitle),
-        ),
-        const SizedBox(height: AppDimensions.spacing24),
-        MaterialPinField(
-          length: _otpLength,
-          keyboardType: TextInputType.number,
-          onChanged: (value) => _otp = value,
-          theme: MaterialPinTheme(
-            cellSize: const Size(45, 55),
-            fillColor: KitColors.surface,
-            filledFillColor: KitColors.surface,
-            focusedFillColor: KitColors.primary.withValues(alpha: 0.2),
-            spacing: 10,
-            borderRadius: BorderRadius.circular(AppDimensions.radius12),
-            borderColor: KitColors.primary,
-            focusedBorderColor: KitColors.primary,
-            filledBorderColor: KitColors.primary,
-            borderWidth: 2,
-            focusedBorderWidth: 2.5,
-            textStyle: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: KitColors.primary,
-            ),
           ),
-        ),
-        if (isEmail) ...[
-          const SizedBox(height: AppDimensions.spacing16),
-          Align(
-            alignment: Alignment.center,
-            child: TextButton(
-              onPressed: _resendEmailCode,
-              child: Text(l10n.twoFaResendCode),
-            ),
+          const SizedBox(height: AppDimensions.spacing24),
+          KitPinField(
+            length: _otpLength,
+            onChanged: (value) => _otp = value,
           ),
-        ],
-        const SizedBox(height: AppDimensions.spacing24),
-        CustomButton(
-          label: _isDisabling ? l10n.twoFaDisable : l10n.verify,
-          backgroundColor: _isDisabling ? KitColors.error : null,
-          isLoading: _loading,
-          onPressed: _loading ? null : _submitCode,
-        ),
-        if (!_isDisabling) ...[
-          const SizedBox(height: AppDimensions.spacing12),
+          if (isEmail) ...[
+            const SizedBox(height: AppDimensions.spacing16),
+            Align(
+              alignment: Alignment.center,
+              child: TextButton(
+                onPressed: _resendEmailCode,
+                child: Text(l10n.twoFaResendCode),
+              ),
+            ),
+          ],
+          const SizedBox(height: AppDimensions.spacing24),
           CustomButton(
-            label: l10n.cancel,
-            isOutlined: true,
-            onPressed: () {
-              setState(() {
-                _otp = '';
-                if (_selectedMethod == TwoFaMethod.totp) {
-                  _stage = _TwoFaStage.totpSetup;
-                } else {
-                  _selectedMethod = null;
-                  _stage = _TwoFaStage.methodSelection;
-                }
-              });
-            },
+            label: _isDisabling ? l10n.twoFaDisable : l10n.verify,
+            backgroundColor: _isDisabling ? KitColors.error : null,
+            isLoading: _loading,
+            onPressed: _loading ? null : _submitCode,
           ),
+          if (!_isDisabling) ...[
+            const SizedBox(height: AppDimensions.spacing12),
+            CustomButton(
+              label: l10n.cancel,
+              isOutlined: true,
+              onPressed: () {
+                setState(() {
+                  _otp = '';
+                  if (_selectedMethod == TwoFaMethod.totp) {
+                    _stage = _TwoFaStage.totpSetup;
+                  } else {
+                    _selectedMethod = null;
+                    _stage = _TwoFaStage.methodSelection;
+                  }
+                });
+              },
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -537,9 +558,9 @@ class _MethodCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppDimensions.spacing16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: KitColors.primaryMuted.withValues(alpha: 0.55),
           borderRadius: BorderRadius.circular(AppDimensions.radius16),
-          border: Border.all(color: KitColors.border),
+          border: Border.all(color: KitColors.primary.withValues(alpha: 0.12)),
         ),
         child: Row(
           children: [
@@ -608,7 +629,7 @@ class C2cTwoFaSetupScreen extends StatelessWidget {
     final l10n = KitL10n(locale);
     return Scaffold(
       backgroundColor: KitColors.background,
-      appBar: CustomAppBar(title: l10n.twoFactorAuth),
+      appBar: CustomAppBar(title: l10n.twoFactorAuth, app: app),
       body: SafeArea(
         child: C2cTwoFaSetupView(
           app: app,

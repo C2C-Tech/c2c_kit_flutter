@@ -53,7 +53,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       keyboardType: widget.keyboardType,
       onChanged: widget.onChanged,
       style: const TextStyle(
-        fontSize: 13,
+        fontSize: 15,
         fontWeight: FontWeight.w500,
         color: KitColors.textPrimary,
       ),
@@ -64,39 +64,59 @@ class _CustomTextFieldState extends State<CustomTextField> {
             }
             return null;
           },
-      decoration: InputDecoration(
-        labelText: widget.label,
-        labelStyle: const TextStyle(color: KitColors.primary),
-        prefixIcon: widget.prefixIcon != null
-            ? Icon(widget.prefixIcon, color: KitColors.primary, size: 22)
-            : null,
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 20,
-        ),
-        filled: true,
-        fillColor: Colors.grey.withValues(alpha: 0.05),
+      decoration: kitInputDecoration(
+        label: widget.label,
+        prefixIcon: widget.prefixIcon,
         suffixIcon: widget.obscureText
             ? IconButton(
                 icon: Icon(
-                  _obscure ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
+                  _obscure
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: KitColors.textHint,
+                  size: 20,
                 ),
                 onPressed: () => setState(() => _obscure = !_obscure),
               )
             : null,
-        border: _border(KitColors.primary),
-        enabledBorder: _border(KitColors.primary),
-        focusedBorder: _border(KitColors.primary),
-        errorBorder: _border(KitColors.error, width: 1),
       ),
     );
   }
+}
 
-  OutlineInputBorder _border(Color color, {double width = 2}) {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.radius12),
-      borderSide: BorderSide(color: color, width: width),
-    );
-  }
+InputDecoration kitInputDecoration({
+  required String label,
+  IconData? prefixIcon,
+  Widget? suffixIcon,
+}) {
+  return InputDecoration(
+    labelText: label,
+    labelStyle: const TextStyle(
+      color: KitColors.textSecondary,
+      fontWeight: FontWeight.w500,
+    ),
+    floatingLabelStyle: const TextStyle(
+      color: KitColors.primary,
+      fontWeight: FontWeight.w600,
+    ),
+    prefixIcon: prefixIcon != null
+        ? Icon(prefixIcon, color: KitColors.primary, size: 20)
+        : null,
+    suffixIcon: suffixIcon,
+    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+    filled: true,
+    fillColor: KitColors.primaryMuted.withValues(alpha: 0.45),
+    border: _border(KitColors.border, width: 1),
+    enabledBorder: _border(KitColors.border, width: 1),
+    focusedBorder: _border(KitColors.primary, width: 1.5),
+    errorBorder: _border(KitColors.error, width: 1),
+    focusedErrorBorder: _border(KitColors.error, width: 1.5),
+  );
+}
+
+OutlineInputBorder _border(Color color, {double width = 1}) {
+  return OutlineInputBorder(
+    borderRadius: BorderRadius.circular(AppDimensions.radius16),
+    borderSide: BorderSide(color: color, width: width),
+  );
 }

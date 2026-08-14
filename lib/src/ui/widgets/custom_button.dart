@@ -22,18 +22,20 @@ class CustomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = backgroundColor ?? KitColors.primary;
+    final enabled = !isLoading && onPressed != null;
 
     if (isOutlined) {
       return SizedBox(
         width: double.infinity,
-        height: 52,
+        height: AppDimensions.buttonHeight,
         child: OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
             foregroundColor: bg,
-            side: BorderSide(color: bg, width: 1.5),
+            backgroundColor: bg.withValues(alpha: 0.04),
+            side: BorderSide(color: bg.withValues(alpha: 0.55), width: 1.4),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radius12),
+              borderRadius: BorderRadius.circular(AppDimensions.radius16),
             ),
           ),
           child: _child(bg),
@@ -41,20 +43,50 @@ class CustomButton extends StatelessWidget {
       );
     }
 
+    final radius = BorderRadius.circular(AppDimensions.radius16);
+    final useBrandGradient = backgroundColor == null;
+
     return SizedBox(
       width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bg,
-          foregroundColor: KitColors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radius12),
-          ),
+      height: AppDimensions.buttonHeight,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          color: useBrandGradient ? null : bg,
+          gradient: useBrandGradient
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: enabled
+                      ? [KitColors.primaryLight, bg]
+                      : [
+                          KitColors.primaryLight.withValues(alpha: 0.45),
+                          bg.withValues(alpha: 0.45),
+                        ],
+                )
+              : null,
+          boxShadow: enabled
+              ? [
+                  BoxShadow(
+                    color: bg.withValues(alpha: 0.28),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+              : null,
         ),
-        child: _child(KitColors.white),
+        child: ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            disabledBackgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            foregroundColor: KitColors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: radius),
+          ),
+          child: _child(KitColors.white),
+        ),
       ),
     );
   }
@@ -64,12 +96,17 @@ class CustomButton extends StatelessWidget {
       return SizedBox(
         height: 20,
         width: 20,
-        child: CircularProgressIndicator(strokeWidth: 2, color: color),
+        child: CircularProgressIndicator(strokeWidth: 2.2, color: color),
       );
     }
     return Text(
       label,
-      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color),
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.2,
+        color: color,
+      ),
     );
   }
 }

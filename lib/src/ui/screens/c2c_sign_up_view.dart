@@ -1,6 +1,9 @@
 import 'package:c2c_kit_flutter/c2c_kit_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
+
+import '../widgets/c2c_auth_shell.dart';
+import '../widgets/kit_pin_field.dart';
+import '../widgets/kit_surface_card.dart';
 
 /// Generic sign-up form usable across apps.
 ///
@@ -241,11 +244,13 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
             return Container(
               decoration: const BoxDecoration(
                 color: KitColors.surface,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(AppDimensions.radius24),
+                ),
               ),
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 30,
-                top: 30,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                top: 12,
                 left: 24,
                 right: 24,
               ),
@@ -253,23 +258,23 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 50,
-                    height: 5,
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
                       color: KitColors.border,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  const SizedBox(height: 25),
+                  const SizedBox(height: AppDimensions.spacing24),
                   Text(
                     l10n.emailVerification,
                     style: const TextStyle(
                       fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: KitColors.primary,
+                      fontWeight: FontWeight.w700,
+                      color: KitColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: AppDimensions.spacing12),
                   Text(
                     l10n.emailVerificationMessage(email),
                     textAlign: TextAlign.center,
@@ -278,41 +283,18 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                       height: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  MaterialPinField(
+                  const SizedBox(height: AppDimensions.spacing24),
+                  KitPinField(
                     length: _otpLength,
-                    keyboardType: TextInputType.number,
                     onChanged: (value) => enteredCode = value,
-                    theme: MaterialPinTheme(
-                      cellSize: const Size(45, 55),
-                      fillColor: KitColors.surface,
-                      filledFillColor: KitColors.surface,
-                      focusedFillColor: KitColors.primary.withValues(
-                        alpha: 0.2,
-                      ),
-                      spacing: 10,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radius12,
-                      ),
-                      borderColor: KitColors.primary,
-                      focusedBorderColor: KitColors.primary,
-                      filledBorderColor: KitColors.primary,
-                      borderWidth: 2,
-                      focusedBorderWidth: 2.5,
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: KitColors.primary,
-                      ),
-                    ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: AppDimensions.spacing24),
                   CustomButton(
                     label: l10n.completeVerification,
                     isLoading: verifying,
                     onPressed: verifying ? null : verifyOtp,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppDimensions.spacing16),
                 ],
               ),
             );
@@ -322,35 +304,15 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
     );
   }
 
-  InputDecoration _dropdownDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: KitColors.primary),
-      prefixIcon: Icon(icon, color: KitColors.primary, size: 22),
-      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      filled: true,
-      fillColor: Colors.grey.withValues(alpha: 0.05),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radius12),
-        borderSide: const BorderSide(color: KitColors.primary, width: 2),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radius12),
-        borderSide: const BorderSide(color: KitColors.primary, width: 2),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radius12),
-        borderSide: const BorderSide(color: KitColors.primary, width: 2),
-      ),
-    );
-  }
-
   Widget _salutationDropdown(KitL10n l10n) {
     return DropdownButtonFormField<String>(
-      decoration: _dropdownDecoration(l10n.salutation, Icons.person_3_outlined),
+      decoration: kitInputDecoration(
+        label: l10n.salutation,
+        prefixIcon: Icons.person_3_outlined,
+      ),
       initialValue: _gender,
       dropdownColor: KitColors.surface,
-      icon: const Icon(Icons.arrow_drop_down),
+      icon: const Icon(Icons.arrow_drop_down, color: KitColors.primary),
       onChanged: (value) {
         if (value == null) return;
         setState(() => _gender = value);
@@ -366,46 +328,36 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
   Widget build(BuildContext context) {
     final l10n = _l10n;
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(AppDimensions.contentPadding(context)),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: AppDimensions.maxFormWidth,
-            ),
-            child: Form(
-              key: _formKey,
+    return C2cAuthShell(
+      app: widget.app,
+      title: l10n.createAccount,
+      subtitle: l10n.createAccountSubtitle,
+      compactHeader: true,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            KitFormSection(
+              title: l10n.personalDetails,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Center(child: C2cLogo()),
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.createAccount,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: KitColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
                   _salutationDropdown(l10n),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacing16),
                   CustomTextField(
                     label: l10n.surname,
                     l10n: l10n,
                     controller: _surnameController,
                     prefixIcon: Icons.person_outline,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacing16),
                   CustomTextField(
                     label: l10n.name,
                     l10n: l10n,
                     controller: _nameController,
                     prefixIcon: Icons.person_outline,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacing16),
                   CustomTextField(
                     label: l10n.birthDate,
                     l10n: l10n,
@@ -414,21 +366,36 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                     readOnly: true,
                     onTap: _pickBirthDate,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacing16),
                   CustomTextField(
                     label: l10n.birthPlace,
                     l10n: l10n,
                     controller: _birthPlaceController,
                     prefixIcon: Icons.location_on_outlined,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacing16),
+                  CustomTextField(
+                    label: l10n.phone,
+                    l10n: l10n,
+                    controller: _phoneController,
+                    prefixIcon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacing16),
+            KitFormSection(
+              title: l10n.address,
+              child: Column(
+                children: [
                   CustomTextField(
                     label: l10n.street,
                     l10n: l10n,
                     controller: _streetController,
                     prefixIcon: Icons.signpost_outlined,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacing16),
                   Row(
                     children: [
                       Expanded(
@@ -441,7 +408,7 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                           keyboardType: TextInputType.number,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppDimensions.spacing12),
                       Expanded(
                         flex: 3,
                         child: CustomTextField(
@@ -454,23 +421,21 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacing16),
                   CustomTextField(
                     label: l10n.city,
                     l10n: l10n,
                     controller: _cityController,
                     prefixIcon: Icons.location_city,
                   ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    label: l10n.phone,
-                    l10n: l10n,
-                    controller: _phoneController,
-                    prefixIcon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                  ),
-
-                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacing16),
+            KitFormSection(
+              title: l10n.accountCredentials,
+              child: Column(
+                children: [
                   CustomTextField(
                     label: l10n.emailAddress,
                     l10n: l10n,
@@ -485,7 +450,7 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacing16),
                   CustomTextField(
                     label: l10n.password,
                     l10n: l10n,
@@ -500,7 +465,7 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacing16),
                   CustomTextField(
                     label: l10n.confirmPassword,
                     l10n: l10n,
@@ -514,29 +479,29 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
-                  CustomButton(
-                    label: l10n.signUp,
-                    isLoading: _loading,
-                    onPressed: _loading ? null : _submit,
-                  ),
-                  if (widget.onLoginTap != null) ...[
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: widget.onLoginTap,
-                      child: Text(
-                        l10n.alreadyHaveAccount,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: KitColors.primary,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
-          ),
+            const SizedBox(height: AppDimensions.spacing24),
+            CustomButton(
+              label: l10n.signUp,
+              isLoading: _loading,
+              onPressed: _loading ? null : _submit,
+            ),
+            if (widget.onLoginTap != null) ...[
+              const SizedBox(height: AppDimensions.spacing8),
+              TextButton(
+                onPressed: widget.onLoginTap,
+                child: Text(
+                  l10n.alreadyHaveAccount,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: KitColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -565,7 +530,7 @@ class C2cSignUpScreen extends StatelessWidget {
     final l10n = KitL10n(locale);
     return Scaffold(
       backgroundColor: KitColors.background,
-      appBar: CustomAppBar(title: l10n.signUp),
+      appBar: CustomAppBar(title: l10n.signUp, app: app),
       body: C2cSignUpView(
         app: app,
         locale: locale,

@@ -1,19 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
 
-import '../../../constants/app_ids.dart';
+import '../../../constants/apps.dart';
 import '../../../constants/colors.dart';
 import '../../../constants/dimensions.dart';
 import '../../api/auth_api.dart';
 import '../../api/models.dart';
 import '../l10n/kit_l10n.dart';
-import '../widgets/c2c_logo.dart';
+import '../widgets/c2c_auth_shell.dart';
+import '../widgets/c2c_brand_header.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_message.dart';
 import '../widgets/custom_section_title.dart';
 import '../widgets/custom_text_field.dart';
+import '../widgets/kit_pin_field.dart';
+import '../widgets/kit_surface_card.dart';
 import 'c2c_forgot_password_view.dart';
 
 /// Reusable login form. Host apps wrap this in their own route.
@@ -129,92 +131,76 @@ class _C2cLoginViewState extends State<C2cLoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: _buildForm(),
-      ),
-    );
-  }
-
-  Widget _buildForm() {
     final l10n = _l10n;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SizedBox(height: 32),
-        const Center(child: C2cLogo()),
-        const SizedBox(height: 24),
-        Text(
-          l10n.continueSignIn,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: KitColors.primary,
-          ),
-        ),
-        const SizedBox(height: 32),
-        Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              CustomTextField(
-                label: l10n.emailAddress,
-                l10n: l10n,
-                controller: _emailController,
-                prefixIcon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return l10n.fieldRequired(l10n.emailAddress);
-                  }
-                  if (!value.contains('@')) return l10n.invalidEmail;
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              CustomTextField(
-                label: l10n.password,
-                l10n: l10n,
-                controller: _passwordController,
-                prefixIcon: Icons.lock_outline,
-                obscureText: true,
-              ),
-            ],
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: _loading ? null : _openForgotPassword,
-            child: Text(
-              l10n.forgotPassword,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: KitColors.primary,
+    return C2cAuthShell(
+      app: widget.app,
+      title: l10n.welcomeTo(widget.app.name),
+      subtitle: widget.app.punchLine,
+      child: KitSurfaceCard(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  CustomTextField(
+                    label: l10n.emailAddress,
+                    l10n: l10n,
+                    controller: _emailController,
+                    prefixIcon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.fieldRequired(l10n.emailAddress);
+                      }
+                      if (!value.contains('@')) return l10n.invalidEmail;
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: AppDimensions.spacing16),
+                  CustomTextField(
+                    label: l10n.password,
+                    l10n: l10n,
+                    controller: _passwordController,
+                    prefixIcon: Icons.lock_outline,
+                    obscureText: true,
+                  ),
+                ],
               ),
             ),
-          ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _loading ? null : _openForgotPassword,
+                child: Text(
+                  l10n.forgotPassword,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: KitColors.primary,
+                  ),
+                ),
+              ),
+            ),
+            CustomButton(
+              label: l10n.login,
+              isLoading: _loading,
+              onPressed: _loading ? null : _submit,
+            ),
+            if (widget.onSignUp != null) ...[
+              const SizedBox(height: AppDimensions.spacing12),
+              CustomButton(
+                label: l10n.signUp,
+                isOutlined: true,
+                onPressed: widget.onSignUp,
+              ),
+            ],
+          ],
         ),
-        const SizedBox(height: 16),
-        CustomButton(
-          label: l10n.login,
-          isLoading: _loading,
-          onPressed: _loading ? null : _submit,
-        ),
-        if (widget.onSignUp != null) ...[
-          const SizedBox(height: 16),
-          CustomButton(
-            label: l10n.signUp,
-            isOutlined: true,
-            onPressed: widget.onSignUp,
-          ),
-        ],
-      ],
+      ),
     );
   }
 }
@@ -244,7 +230,7 @@ class C2cLoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: KitColors.surface,
+      backgroundColor: KitColors.background,
       body: C2cLoginView(
         app: app,
         locale: locale,
@@ -327,7 +313,7 @@ class C2cLoginTwoFaView extends StatefulWidget {
       MaterialPageRoute(
         builder: (_) => Scaffold(
           backgroundColor: KitColors.background,
-          appBar: CustomAppBar(title: l10n.twoFactorAuth),
+          appBar: CustomAppBar(title: l10n.twoFactorAuth, app: app),
           body: SafeArea(child: view),
         ),
       ),
@@ -388,47 +374,43 @@ class _C2cLoginTwoFaViewState extends State<C2cLoginTwoFaView> {
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        CustomSectionTitle(
-          title: l10n.loginTwoFaTitle,
-          subtitle: isEmail
-              ? l10n.loginTwoFaEmailSubtitle(widget.email)
-              : l10n.loginTwoFaTotpSubtitle,
-        ),
-        const SizedBox(height: AppDimensions.spacing24),
-        MaterialPinField(
-          length: _otpLength,
-          keyboardType: TextInputType.number,
-          onChanged: (value) => _otp = value,
-          theme: MaterialPinTheme(
-            cellSize: const Size(45, 55),
-            fillColor: KitColors.surface,
-            filledFillColor: KitColors.surface,
-            focusedFillColor: KitColors.primary.withValues(alpha: 0.2),
-            spacing: 10,
-            borderRadius: BorderRadius.circular(AppDimensions.radius12),
-            borderColor: KitColors.primary,
-            focusedBorderColor: KitColors.primary,
-            filledBorderColor: KitColors.primary,
-            borderWidth: 2,
-            focusedBorderWidth: 2.5,
-            textStyle: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: KitColors.primary,
-            ),
+        if (!widget.isDialog) ...[
+          C2cBrandHeader(
+            app: widget.app,
+            title: l10n.twoFactorAuth,
+            compact: true,
           ),
-        ),
-        const SizedBox(height: AppDimensions.spacing24),
-        CustomButton(
-          label: l10n.verify,
-          isLoading: _loading,
-          onPressed: _loading ? null : _submit,
-        ),
-        const SizedBox(height: AppDimensions.spacing12),
-        CustomButton(
-          label: l10n.cancel,
-          isOutlined: true,
-          onPressed: _loading ? null : () => Navigator.of(context).pop(),
+          const SizedBox(height: AppDimensions.spacing24),
+        ],
+        KitSurfaceCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomSectionTitle(
+                title: l10n.loginTwoFaTitle,
+                subtitle: isEmail
+                    ? l10n.loginTwoFaEmailSubtitle(widget.email)
+                    : l10n.loginTwoFaTotpSubtitle,
+              ),
+              const SizedBox(height: AppDimensions.spacing24),
+              KitPinField(
+                length: _otpLength,
+                onChanged: (value) => _otp = value,
+              ),
+              const SizedBox(height: AppDimensions.spacing24),
+              CustomButton(
+                label: l10n.verify,
+                isLoading: _loading,
+                onPressed: _loading ? null : _submit,
+              ),
+              const SizedBox(height: AppDimensions.spacing12),
+              CustomButton(
+                label: l10n.cancel,
+                isOutlined: true,
+                onPressed: _loading ? null : () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -440,8 +422,10 @@ class _C2cLoginTwoFaViewState extends State<C2cLoginTwoFaView> {
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: KitColors.divider)),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: KitColors.primary.withValues(alpha: 0.08)),
+              ),
             ),
             child: Row(
               children: [

@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'package:c2c_kit_flutter/c2c_kit_flutter.dart';
 import 'package:http/http.dart' as http;
 
-import '../../constants/app_ids.dart';
+import '../../constants/apps.dart';
 import 'models.dart';
 
 /// Thin helpers for C2C auth endpoints. Fixed base URL; no app init required.
