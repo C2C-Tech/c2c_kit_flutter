@@ -213,26 +213,34 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
 
                 switch (result) {
                   case AuthTokensSuccess(:final tokens):
-                    Navigator.of(sheetContext).pop();
-                    final registerBody = getRegisterBody();
-                    // Optional post-registration 2FA step.
-                    // User can dismiss via back arrow; in that case we still
-                    // continue with the original `onSuccess()` callback.
-                    try {
-                      await showC2cTwoFaSetup(
-                        context,
-                        app: widget.app,
-                        accessToken: tokens.cloudAccessToken,
-                        refreshToken: tokens.cloudRefreshToken,
-                        locale: widget.locale,
-                        userEmail: registerBody['email']?.toString() ?? '',
-                        currentMethod: null,
-                      );
-                    } finally {
-                      await widget.onSuccess(tokens, registerBody);
+                    {
+                      Navigator.of(sheetContext).pop();
+                      final registerBody = getRegisterBody();
+                      if (widget.app == C2cApp.authenticator) {
+                        widget.onSuccess(tokens, registerBody);
+                        return;
+                      }
+                      // Optional post-registration 2FA step.
+                      // User can dismiss via back arrow; in that case we still
+                      // continue with the original `onSuccess()` callback.
+                      try {
+                        await showC2cTwoFaSetup(
+                          context,
+                          app: widget.app,
+                          accessToken: tokens.cloudAccessToken,
+                          refreshToken: tokens.cloudRefreshToken,
+                          locale: widget.locale,
+                          userEmail: registerBody['email']?.toString() ?? '',
+                          currentMethod: null,
+                        );
+                      } finally {
+                        await widget.onSuccess(tokens, registerBody);
+                      }
                     }
                   case AuthTokensFailure(:final message):
-                    showCustomMessage(context, message, isError: true);
+                    {
+                      showCustomMessage(context, message, isError: true);
+                    }
                 }
               } finally {
                 if (sheetContext.mounted) {

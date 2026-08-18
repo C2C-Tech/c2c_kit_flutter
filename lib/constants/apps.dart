@@ -17,7 +17,7 @@ enum C2cApp {
     punchLineDe: 'Planen, vorbeugen, instandhalten.',
   ),
   authenticator(
-    name: 'Authenticator',
+    name: 'C2C Authenticator',
     logoPath: 'assets/authenticator_icon.png',
     punchLineEn: 'Secure access to your C2C apps.',
     punchLineDe: 'Sicherer Zugriff auf Ihre C2C-Apps.',

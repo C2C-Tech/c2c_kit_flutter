@@ -247,7 +247,7 @@ class AuthApi {
     return post(
       app: app,
       path: '/refresh',
-      body: {'refresh_token': refreshToken},
+      body: {'cloud_refresh_token': refreshToken},
     );
   }
 
