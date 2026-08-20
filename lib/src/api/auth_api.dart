@@ -8,12 +8,12 @@ import '../../constants/apps.dart';
 import 'models.dart';
 
 /// Thin helpers for C2C auth endpoints. Fixed base URL; no app init required.
-class AuthApi {
-  AuthApi._();
+class C2cKitAuthApi {
+  C2cKitAuthApi._();
 
   static const String baseUrl = 'https://c2ccloud.vercel.app';
 
-  static Future<ApiResponse> post({
+  static Future<C2cKitApiResponse> post({
     required C2cApp app,
     required String path,
     Map<String, dynamic> body = const {},
@@ -48,7 +48,7 @@ class AuthApi {
           : jsonDecode(response.body);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return ApiResponse(
+        return C2cKitApiResponse(
           isOk: true,
           statusCode: response.statusCode,
           data: data,
@@ -60,7 +60,7 @@ class AuthApi {
         message = (data['message'] ?? data['error'] ?? message).toString();
       }
 
-      return ApiResponse(
+      return C2cKitApiResponse(
         isOk: false,
         statusCode: response.statusCode,
         data: data,
@@ -69,7 +69,7 @@ class AuthApi {
     } catch (e, x) {
       log(e.toString());
       log(x.toString());
-      return ApiResponse(
+      return C2cKitApiResponse(
         isOk: false,
         statusCode: 0,
         errorMessage: e.toString(),
@@ -152,7 +152,7 @@ class AuthApi {
     }
   }
 
-  static Future<ApiResponse> initializeRegistration({
+  static Future<C2cKitApiResponse> initializeRegistration({
     required C2cApp app,
     required String email,
   }) {
@@ -195,14 +195,14 @@ class AuthApi {
   // 2FA management (authenticated — pass tokens from app storage)
   // ---------------------------------------------------------------------------
 
-  static Future<ApiResponse> setupTotp2Fa({
+  static Future<C2cKitApiResponse> setupTotp2Fa({
     required C2cApp app,
     required String accessToken,
   }) {
     return post(app: app, path: '/2fa/setup/totp', accessToken: accessToken);
   }
 
-  static Future<ApiResponse> sendEmail2FaCode({
+  static Future<C2cKitApiResponse> sendEmail2FaCode({
     required C2cApp app,
     required String accessToken,
   }) {
@@ -213,7 +213,7 @@ class AuthApi {
     );
   }
 
-  static Future<ApiResponse> enable2Fa({
+  static Future<C2cKitApiResponse> enable2Fa({
     required C2cApp app,
     required String accessToken,
     required TwoFaMethod method,
@@ -227,7 +227,7 @@ class AuthApi {
     );
   }
 
-  static Future<ApiResponse> disable2Fa({
+  static Future<C2cKitApiResponse> disable2Fa({
     required C2cApp app,
     required String accessToken,
     required String code,
@@ -240,7 +240,7 @@ class AuthApi {
     );
   }
 
-  static Future<ApiResponse> refreshAccessToken({
+  static Future<C2cKitApiResponse> refreshAccessToken({
     required C2cApp app,
     required String refreshToken,
   }) {
@@ -256,7 +256,7 @@ class AuthApi {
   // ---------------------------------------------------------------------------
 
   /// Sends a recovery verification code to [email].
-  static Future<ApiResponse> forgotPassword({
+  static Future<C2cKitApiResponse> forgotPassword({
     required C2cApp app,
     required String email,
   }) {
@@ -264,7 +264,7 @@ class AuthApi {
   }
 
   /// Validates the recovery [code] for the given [email].
-  static Future<ApiResponse> verifyRecoveryCode({
+  static Future<C2cKitApiResponse> verifyRecoveryCode({
     required C2cApp app,
     required String email,
     required String code,
@@ -277,7 +277,7 @@ class AuthApi {
   }
 
   /// Resets the password for [email] using the verified [otp].
-  static Future<ApiResponse> resetPassword({
+  static Future<C2cKitApiResponse> resetPassword({
     required C2cApp app,
     required String email,
     required String otp,

@@ -56,9 +56,7 @@ class _C2cLoginViewState extends State<C2cLoginView> {
   void initState() {
     super.initState();
     final debug = widget.isDebugMode;
-    _emailController = TextEditingController(
-      text: widget.initialEmail ?? (debug ? 'test@example.com' : ''),
-    );
+    _emailController = TextEditingController(text: widget.initialEmail ?? "");
     _passwordController = TextEditingController(
       text: debug ? 'c2C@123456' : '',
     );
@@ -97,7 +95,7 @@ class _C2cLoginViewState extends State<C2cLoginView> {
 
     setState(() => _loading = true);
     try {
-      final LoginResult result = await AuthApi.login(
+      final LoginResult result = await C2cKitAuthApi.login(
         app: widget.app,
         email: email,
         password: password,
@@ -341,7 +339,7 @@ class _C2cLoginTwoFaViewState extends State<C2cLoginTwoFaView> {
 
     setState(() => _loading = true);
     try {
-      final result = await AuthApi.verifyLogin2Fa(
+      final result = await C2cKitAuthApi.verifyLogin2Fa(
         app: widget.app,
         tempToken: widget.tempToken,
         code: _otp.trim(),
@@ -426,7 +424,9 @@ class _C2cLoginTwoFaViewState extends State<C2cLoginTwoFaView> {
             padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: KitColors.primary.withValues(alpha: 0.08)),
+                bottom: BorderSide(
+                  color: KitColors.primary.withValues(alpha: 0.08),
+                ),
               ),
             ),
             child: Row(

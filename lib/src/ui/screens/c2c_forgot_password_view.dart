@@ -81,7 +81,7 @@ class _C2cForgotPasswordViewState extends State<C2cForgotPasswordView> {
 
     setState(() => _loading = true);
     try {
-      final response = await AuthApi.forgotPassword(
+      final response = await C2cKitAuthApi.forgotPassword(
         app: widget.app,
         email: _emailController.text.trim(),
       );
@@ -112,7 +112,7 @@ class _C2cForgotPasswordViewState extends State<C2cForgotPasswordView> {
 
     setState(() => _loading = true);
     try {
-      final response = await AuthApi.verifyRecoveryCode(
+      final response = await C2cKitAuthApi.verifyRecoveryCode(
         app: widget.app,
         email: _emailController.text.trim(),
         code: _otp.trim(),
@@ -140,7 +140,7 @@ class _C2cForgotPasswordViewState extends State<C2cForgotPasswordView> {
 
     setState(() => _loading = true);
     try {
-      final response = await AuthApi.resetPassword(
+      final response = await C2cKitAuthApi.resetPassword(
         app: widget.app,
         email: _emailController.text.trim(),
         otp: _otp.trim(),

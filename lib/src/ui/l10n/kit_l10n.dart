@@ -108,6 +108,17 @@ class KitL10n {
         'Disable two-factor authentication',
         'Zwei-Faktor-Authentifizierung deaktivieren',
       );
+  String twoFaAlreadyEnabledTitle(String method) => _t(
+        '2FA is enabled via $method',
+        '2FA ist über $method aktiviert',
+      );
+  String get twoFaAlreadyEnabledSubtitle => _t(
+        'Your account is already protected with two-factor authentication. Do you want to remove it?',
+        'Ihr Konto ist bereits mit Zwei-Faktor-Authentifizierung geschützt. Möchten Sie sie entfernen?',
+      );
+  String get twoFaConfirmDisable =>
+      _t('Yes, disable 2FA', 'Ja, 2FA deaktivieren');
+  String get twoFaEnabledBadge => _t('Enabled', 'Aktiviert');
   String get twoFaDisableEmailSubtitle => _t(
         'Enter the verification code sent to your email to disable 2FA.',
         'Geben Sie den an Ihre E-Mail gesendeten Code ein, um 2FA zu deaktivieren.',
@@ -118,6 +129,10 @@ class KitL10n {
       );
   String get twoFaDisable => _t('Disable 2FA', '2FA deaktivieren');
   String get twoFaResendCode => _t('Resend code', 'Code erneut senden');
+  String twoFaResendCodeIn(int seconds) => _t(
+        'Resend code in ${seconds}s',
+        'Code erneut senden in ${seconds}s',
+      );
   String get twoFaEmailCodeSent =>
       _t('Verification code sent', 'Verifizierungscode gesendet');
   String get twoFaEnabledSuccess => _t(

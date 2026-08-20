@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +19,7 @@ import '../widgets/custom_section_title.dart';
 import '../widgets/kit_pin_field.dart';
 import '../widgets/kit_surface_card.dart';
 
-enum _TwoFaStage { methodSelection, totpSetup, enterCode }
+enum _TwoFaStage { methodSelection, confirmDisable, totpSetup, enterCode }
 
 /// Opens the 2FA enable/disable flow.
 ///
@@ -113,6 +115,7 @@ class C2cTwoFaSetupView extends StatefulWidget {
 
 class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
   static const _otpLength = 6;
+  static const _resendCooldownSeconds = 60;
 
   KitL10n get _l10n => KitL10n(widget.locale);
 
@@ -125,31 +128,78 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
   String? _provisioningUri;
   bool _loading = false;
 
+  Timer? _resendTimer;
+  int _resendSecondsLeft = 0;
+  bool _resendLoading = false;
+
   @override
   void initState() {
     super.initState();
     _isDisabling = widget.currentMethod != null;
     _selectedMethod = widget.currentMethod;
     if (_isDisabling) {
-      _stage = _TwoFaStage.enterCode;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _prepareDisableCode();
-      });
+      _stage = _TwoFaStage.confirmDisable;
     }
   }
 
-  Future<void> _prepareDisableCode() async {
-    if (_selectedMethod == TwoFaMethod.email) {
-      final response = await AuthApi.sendEmail2FaCode(
-        app: widget.app,
-        accessToken: widget.accessToken,
-      );
-      if (!mounted) return;
-      if (!response.isOk) {
-        showCustomMessage(context, response.errorMessage, isError: true);
-      } else {
-        showCustomMessage(context, _l10n.twoFaEmailCodeSent);
+  @override
+  void dispose() {
+    _resendTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startResendCooldown() {
+    _resendTimer?.cancel();
+    setState(() => _resendSecondsLeft = _resendCooldownSeconds);
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
       }
+      if (_resendSecondsLeft <= 1) {
+        timer.cancel();
+        setState(() => _resendSecondsLeft = 0);
+        return;
+      }
+      setState(() => _resendSecondsLeft -= 1);
+    });
+  }
+
+  String get _methodDisplayName {
+    switch (_selectedMethod) {
+      case TwoFaMethod.totp:
+        return _l10n.twoFaAuthenticatorApp;
+      case TwoFaMethod.email:
+        return _l10n.twoFaEmailMethod;
+      case null:
+        return '';
+    }
+  }
+
+  Future<void> _confirmDisable() async {
+    setState(() => _loading = true);
+    try {
+      if (_selectedMethod == TwoFaMethod.email) {
+        final response = await C2cKitAuthApi.sendEmail2FaCode(
+          app: widget.app,
+          accessToken: widget.accessToken,
+        );
+        if (!mounted) return;
+        if (!response.isOk) {
+          showCustomMessage(context, response.errorMessage, isError: true);
+          return;
+        }
+        showCustomMessage(context, _l10n.twoFaEmailCodeSent);
+        _startResendCooldown();
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _otp = '';
+        _stage = _TwoFaStage.enterCode;
+      });
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -161,7 +211,7 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
 
     try {
       if (method == TwoFaMethod.totp) {
-        final response = await AuthApi.setupTotp2Fa(
+        final response = await C2cKitAuthApi.setupTotp2Fa(
           app: widget.app,
           accessToken: widget.accessToken,
         );
@@ -181,7 +231,7 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
         return;
       }
 
-      final response = await AuthApi.sendEmail2FaCode(
+      final response = await C2cKitAuthApi.sendEmail2FaCode(
         app: widget.app,
         accessToken: widget.accessToken,
       );
@@ -191,6 +241,7 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
         return;
       }
       showCustomMessage(context, _l10n.twoFaEmailCodeSent);
+      _startResendCooldown();
       setState(() {
         _otp = '';
         _stage = _TwoFaStage.enterCode;
@@ -201,16 +252,26 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
   }
 
   Future<void> _resendEmailCode() async {
-    final response = await AuthApi.sendEmail2FaCode(
-      app: widget.app,
-      accessToken: widget.accessToken,
-    );
-    if (!mounted) return;
-    showCustomMessage(
-      context,
-      response.isOk ? _l10n.twoFaEmailCodeSent : response.errorMessage,
-      isError: !response.isOk,
-    );
+    if (_resendSecondsLeft > 0 || _resendLoading) return;
+
+    setState(() => _resendLoading = true);
+    try {
+      final response = await C2cKitAuthApi.sendEmail2FaCode(
+        app: widget.app,
+        accessToken: widget.accessToken,
+      );
+      if (!mounted) return;
+      showCustomMessage(
+        context,
+        response.isOk ? _l10n.twoFaEmailCodeSent : response.errorMessage,
+        isError: !response.isOk,
+      );
+      if (response.isOk) {
+        _startResendCooldown();
+      }
+    } finally {
+      if (mounted) setState(() => _resendLoading = false);
+    }
   }
 
   Future<void> _submitCode() async {
@@ -222,12 +283,12 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
     setState(() => _loading = true);
     try {
       final response = _isDisabling
-          ? await AuthApi.disable2Fa(
+          ? await C2cKitAuthApi.disable2Fa(
               app: widget.app,
               accessToken: widget.accessToken,
               code: _otp.trim(),
             )
-          : await AuthApi.enable2Fa(
+          : await C2cKitAuthApi.enable2Fa(
               app: widget.app,
               accessToken: widget.accessToken,
               method: _selectedMethod!,
@@ -266,6 +327,7 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
     final double padding = AppDimensions.contentPadding(context);
     final Widget content = switch (_stage) {
       _TwoFaStage.methodSelection => _buildMethodSelection(),
+      _TwoFaStage.confirmDisable => _buildConfirmDisable(),
       _TwoFaStage.totpSetup => _buildTotpSetup(),
       _TwoFaStage.enterCode => _buildEnterCode(),
     };
@@ -358,6 +420,129 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
                 onTap: _loading
                     ? null
                     : () => _onSelectMethod(TwoFaMethod.email),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConfirmDisable() {
+    final isEmail = _selectedMethod == TwoFaMethod.email;
+    final l10n = _l10n;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!widget.isDialog) ...[
+          C2cBrandHeader(
+            app: widget.app,
+            locale: widget.locale,
+            title: l10n.twoFactorAuth,
+            compact: true,
+          ),
+          const SizedBox(height: AppDimensions.spacing24),
+        ],
+        KitSurfaceCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomSectionTitle(
+                title: l10n.twoFaAlreadyEnabledTitle(_methodDisplayName),
+                subtitle: l10n.twoFaAlreadyEnabledSubtitle,
+              ),
+              const SizedBox(height: AppDimensions.spacing24),
+              Container(
+                padding: const EdgeInsets.all(AppDimensions.spacing16),
+                decoration: BoxDecoration(
+                  color: KitColors.primaryMuted.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(AppDimensions.radius16),
+                  border: Border.all(
+                    color: KitColors.primary.withValues(alpha: 0.12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: KitColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radius12,
+                        ),
+                      ),
+                      child: Icon(
+                        isEmail
+                            ? Icons.email_outlined
+                            : Icons.phonelink_lock_outlined,
+                        color: KitColors.primary,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.spacing12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _methodDisplayName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: KitColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isEmail
+                                ? (widget.userEmail.isNotEmpty
+                                      ? widget.userEmail
+                                      : l10n.twoFaEmailMethodSubtitle)
+                                : l10n.twoFaAuthenticatorAppSubtitle,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: KitColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: KitColors.success.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radius8,
+                        ),
+                      ),
+                      child: Text(
+                        l10n.twoFaEnabledBadge,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: KitColors.success,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacing24),
+              CustomButton(
+                label: l10n.twoFaConfirmDisable,
+                backgroundColor: KitColors.error,
+                isLoading: _loading,
+                onPressed: _loading ? null : _confirmDisable,
+              ),
+              const SizedBox(height: AppDimensions.spacing12),
+              CustomButton(
+                label: l10n.cancel,
+                isOutlined: true,
+                onPressed: () => Navigator.of(context).pop(false),
               ),
             ],
           ),
@@ -478,34 +663,35 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
     final isEmail = _selectedMethod == TwoFaMethod.email;
 
     final l10n = _l10n;
+    final canResend = _resendSecondsLeft == 0 && !_resendLoading;
 
     return KitSurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CustomSectionTitle(
-            title: _isDisabling ? l10n.twoFaDisableTitle : l10n.codeVerification,
+            title: _isDisabling
+                ? l10n.twoFaDisableTitle
+                : l10n.codeVerification,
             subtitle: _isDisabling
                 ? (isEmail
-                    ? l10n.twoFaDisableEmailSubtitle
-                    : l10n.twoFaDisableTotpSubtitle)
+                      ? l10n.twoFaDisableEmailSubtitle
+                      : l10n.twoFaDisableTotpSubtitle)
                 : (isEmail
-                    ? l10n.enterEmailCodeSubtitle(widget.userEmail)
-                    : l10n.twoFaEnterTotpCodeSubtitle),
+                      ? l10n.enterEmailCodeSubtitle(widget.userEmail)
+                      : l10n.twoFaEnterTotpCodeSubtitle),
           ),
           const SizedBox(height: AppDimensions.spacing24),
-          KitPinField(
-            length: _otpLength,
-            onChanged: (value) => _otp = value,
-          ),
+          KitPinField(length: _otpLength, onChanged: (value) => _otp = value),
           if (isEmail) ...[
             const SizedBox(height: AppDimensions.spacing16),
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: _resendEmailCode,
-                child: Text(l10n.twoFaResendCode),
-              ),
+            _ResendCodeButton(
+              label: canResend
+                  ? l10n.twoFaResendCode
+                  : l10n.twoFaResendCodeIn(_resendSecondsLeft),
+              isLoading: _resendLoading,
+              enabled: canResend,
+              onPressed: canResend ? _resendEmailCode : null,
             ),
           ],
           const SizedBox(height: AppDimensions.spacing24),
@@ -515,25 +701,104 @@ class _C2cTwoFaSetupViewState extends State<C2cTwoFaSetupView> {
             isLoading: _loading,
             onPressed: _loading ? null : _submitCode,
           ),
-          if (!_isDisabling) ...[
-            const SizedBox(height: AppDimensions.spacing12),
-            CustomButton(
-              label: l10n.cancel,
-              isOutlined: true,
-              onPressed: () {
-                setState(() {
-                  _otp = '';
-                  if (_selectedMethod == TwoFaMethod.totp) {
-                    _stage = _TwoFaStage.totpSetup;
-                  } else {
-                    _selectedMethod = null;
-                    _stage = _TwoFaStage.methodSelection;
-                  }
-                });
-              },
-            ),
-          ],
+          const SizedBox(height: AppDimensions.spacing12),
+          CustomButton(
+            label: l10n.cancel,
+            isOutlined: true,
+            onPressed: () {
+              setState(() {
+                _otp = '';
+                if (_isDisabling) {
+                  _resendTimer?.cancel();
+                  _resendSecondsLeft = 0;
+                  _stage = _TwoFaStage.confirmDisable;
+                } else if (_selectedMethod == TwoFaMethod.totp) {
+                  _stage = _TwoFaStage.totpSetup;
+                } else {
+                  _resendTimer?.cancel();
+                  _resendSecondsLeft = 0;
+                  _selectedMethod = null;
+                  _stage = _TwoFaStage.methodSelection;
+                }
+              });
+            },
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _ResendCodeButton extends StatelessWidget {
+  const _ResendCodeButton({
+    required this.label,
+    required this.enabled,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool enabled;
+  final bool isLoading;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = enabled ? KitColors.primary : KitColors.textHint;
+
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: enabled && !isLoading ? onPressed : null,
+          borderRadius: BorderRadius.circular(AppDimensions.radius12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: enabled
+                  ? KitColors.primaryMuted
+                  : KitColors.divider.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(AppDimensions.radius12),
+              border: Border.all(
+                color: enabled
+                    ? KitColors.primary.withValues(alpha: 0.22)
+                    : KitColors.border.withValues(alpha: 0.7),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isLoading)
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: foreground,
+                    ),
+                  )
+                else
+                  Icon(
+                    enabled
+                        ? Icons.refresh_rounded
+                        : Icons.timer_outlined,
+                    size: 18,
+                    color: foreground,
+                  ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: foreground,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

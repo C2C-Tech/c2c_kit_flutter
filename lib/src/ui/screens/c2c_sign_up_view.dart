@@ -136,7 +136,7 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
 
     setState(() => _loading = true);
     try {
-      final init = await AuthApi.initializeRegistration(
+      final init = await C2cKitAuthApi.initializeRegistration(
         app: widget.app,
         email: _email,
       );
@@ -205,7 +205,7 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
 
               setSheetState(() => verifying = true);
               try {
-                final result = await AuthApi.register(
+                final result = await C2cKitAuthApi.register(
                   app: widget.app,
                   body: getRegisterBody(enteredCode: enteredCode),
                 );

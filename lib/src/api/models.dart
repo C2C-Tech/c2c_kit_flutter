@@ -42,8 +42,8 @@ TwoFaMethod? twoFaMethodFromName(String? name) {
 }
 
 /// Simple HTTP result from [AuthApi].
-class ApiResponse {
-  const ApiResponse({
+class C2cKitApiResponse {
+  const C2cKitApiResponse({
     required this.isOk,
     required this.statusCode,
     this.data,
