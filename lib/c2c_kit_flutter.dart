@@ -11,6 +11,7 @@ export 'constants/apps.dart';
 export 'constants/colors.dart';
 export 'constants/dimensions.dart';
 export 'constants/extras.dart';
+export 'constants/validations.dart';
 
 // Auth UI
 export 'src/ui/l10n/kit_l10n.dart';

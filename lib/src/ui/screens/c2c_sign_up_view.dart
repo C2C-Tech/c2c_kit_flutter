@@ -2,6 +2,7 @@ import 'package:c2c_kit_flutter/c2c_kit_flutter.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/c2c_auth_shell.dart';
+import '../widgets/kit_password_strength_indicator.dart';
 import '../widgets/kit_pin_field.dart';
 import '../widgets/kit_surface_card.dart';
 
@@ -53,6 +54,8 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
   /// UI value: `Herr` / `Frau` (same as registration screen).
   String _gender = 'Herr';
   bool _loading = false;
+  String _passwordInput = '';
+  bool _showPasswordStrength = false;
 
   KitL10n get _l10n => KitL10n(widget.locale);
 
@@ -84,6 +87,10 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
       text: debug ? 'c2C@123456' : '',
     );
     _confirmController = TextEditingController(text: debug ? 'c2C@123456' : '');
+    if (debug) {
+      _passwordInput = 'c2C@123456';
+      _showPasswordStrength = true;
+    }
   }
 
   @override
@@ -466,13 +473,19 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                     controller: _passwordController,
                     prefixIcon: Icons.lock_outline,
                     obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return l10n.fieldRequired(l10n.password);
-                      }
-                      if (value.length < 8) return l10n.passwordTooShort;
-                      return null;
+                    onChanged: (String value) {
+                      setState(() {
+                        _passwordInput = value;
+                        _showPasswordStrength = true;
+                      });
                     },
+                    validator: (String? value) =>
+                        PasswordValidation.validate(value, l10n),
+                  ),
+                  KitPasswordStrengthIndicator(
+                    password: _passwordInput,
+                    l10n: l10n,
+                    visible: _showPasswordStrength,
                   ),
                   const SizedBox(height: AppDimensions.spacing16),
                   CustomTextField(

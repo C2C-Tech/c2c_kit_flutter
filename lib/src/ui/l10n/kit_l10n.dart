@@ -56,6 +56,20 @@ class KitL10n {
         'Password should be at least 8 characters',
         'Das Passwort muss mindestens 8 Zeichen lang sein',
       );
+  String get passwordMinEightCharacters =>
+      _t('At least 8 characters', 'Mindestens 8 Zeichen');
+  String get passwordAtLeastOneUppercase => _t(
+        'At least one uppercase letter',
+        'Mindestens ein Großbuchstabe',
+      );
+  String get passwordOneUppercase =>
+      _t('One uppercase letter', 'Ein Großbuchstabe');
+  String get passwordOneSpecialCharacter =>
+      _t('One special character', 'Ein Sonderzeichen');
+  String get passwordOneSpecialCharacterMin => _t(
+        'At least one special character',
+        'Mindestens ein Sonderzeichen',
+      );
   String get passwordsDoNotMatch =>
       _t("Passwords didn't match", 'Passwörter stimmen nicht überein');
   String get twoFactorAuth =>
