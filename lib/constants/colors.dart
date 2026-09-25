@@ -12,16 +12,19 @@ class KitColors {
   static const Color primaryLight = cyan;
   static const Color primaryDark = darkBlue;
   static const Color primaryMuted = Color(0xFFE7F4FB);
+  static const Color teal = Color(0xFF14B8A6);
+  static const Color blueGlow = Color(0xFF3D8BFF);
 
-  static const Color background = Color(0xFFF4F8FC);
+  static const Color background = Color(0xFFF8FAFC);
   static const Color surface = Colors.white;
   static const Color white = Colors.white;
   static const Color black = Colors.black;
   static const Color textPrimary = Color(0xFF0F172A);
   static const Color textSecondary = Color(0xFF64748B);
   static const Color textHint = Color(0xFF94A3B8);
-  static const Color border = Color(0xFFD7E3EE);
-  static const Color divider = Color(0xFFEEF3F8);
+  static const Color border = Color(0xFFCBD5E1);
+  static const Color divider = Color(0xFFF1F5F9);
   static const Color error = Color(0xFFE53935);
-  static const Color success = Color(0xFF0D9F8A);
+  static const Color success = teal;
+  static const Color shadow = Color(0x1A0078C8);
 }

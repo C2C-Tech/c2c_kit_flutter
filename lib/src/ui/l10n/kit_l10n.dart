@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// Built-in English / German copy for kit auth UI.
+part 'kit_l10n_privacy.dart';
+part 'kit_l10n_terms.dart';
+
+/// Built-in English / German copy for kit auth UI and legal screens.
 ///
 /// Host apps may pass a [Locale]; default is German ([defaultLocale]).
-/// They do not pass individual string keys.
+/// They do not pass individual string keys. Null locale → German.
 class KitL10n {
   KitL10n([Locale? locale]) : locale = locale ?? defaultLocale;
 

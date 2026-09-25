@@ -27,3 +27,7 @@ export 'src/ui/widgets/custom_button.dart';
 export 'src/ui/widgets/custom_message.dart';
 export 'src/ui/widgets/custom_section_title.dart';
 export 'src/ui/widgets/custom_text_field.dart';
+
+// Legal
+export 'src/legal/privacy_screen.dart';
+export 'src/legal/terms_and_condition.dart';
