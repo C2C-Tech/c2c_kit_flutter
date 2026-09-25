@@ -33,8 +33,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
+      leadingWidth: showBack ? 44 : 0,
       leading: showBack
           ? IconButton(
+              padding: const EdgeInsets.only(left: 8),
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
               icon: const Icon(Icons.arrow_back_ios_new, size: 18),
               onPressed: onBack ?? () => Navigator.of(context).maybePop(),
             )
@@ -44,7 +47,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         title,
         style: const TextStyle(
           fontFamily: 'Poppins',
-          fontSize: 17,
+          fontSize: 18,
           fontWeight: FontWeight.w600,
           color: KitColors.textPrimary,
         ),

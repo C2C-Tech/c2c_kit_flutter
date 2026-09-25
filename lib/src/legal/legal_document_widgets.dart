@@ -7,7 +7,7 @@ import '../../constants/extras.dart';
 import '../ui/widgets/custom_app_bar.dart';
 
 /// Shared C2C legal document chrome — Poppins, blue hero, section cards.
-class LegalDocumentScaffold extends StatelessWidget {
+class LegalDocumentScaffold extends StatefulWidget {
   const LegalDocumentScaffold({
     super.key,
     required this.title,
@@ -26,14 +26,26 @@ class LegalDocumentScaffold extends StatelessWidget {
   final List<Widget> sections;
 
   @override
-  Widget build(BuildContext context) {
-    final double pad = AppDimensions.contentPadding(context);
+  State<LegalDocumentScaffold> createState() => _LegalDocumentScaffoldState();
+}
 
+class _LegalDocumentScaffoldState extends State<LegalDocumentScaffold> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: KitColors.background,
-      appBar: CustomAppBar(title: title),
+      appBar: CustomAppBar(title: widget.title),
       body: Container(
         width: double.infinity,
+        alignment: Alignment.topLeft,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -46,49 +58,73 @@ class LegalDocumentScaffold extends StatelessWidget {
             stops: const [0, 0.28, 1],
           ),
         ),
-        child: DefaultTextStyle.merge(
-          style: const TextStyle(fontFamily: 'Poppins'),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: ListView(
-                padding: EdgeInsets.fromLTRB(pad, AppDimensions.spacing16, pad, 40),
-                children: [
-                  LegalHeroBanner(
-                    icon: heroIcon,
-                    title: heroTitle,
-                    body: heroBody,
-                    badge: heroBadge,
-                  )
-                      .animate()
-                      .fadeIn(duration: AppDurations.normal)
-                      .slideY(
-                        begin: 0.06,
-                        end: 0,
-                        duration: AppDurations.normal,
-                        curve: Curves.easeOutCubic,
-                      ),
-                  const SizedBox(height: AppDimensions.spacing20),
-                  ...sections.asMap().entries.map((MapEntry<int, Widget> entry) {
-                    final int index = entry.key;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: AppDimensions.spacing16),
-                      child: entry.value
-                          .animate()
-                          .fadeIn(
-                            delay: AppDurations.fast * (index + 1),
-                            duration: AppDurations.normal,
-                          )
-                          .slideY(
-                            begin: 0.04,
-                            end: 0,
-                            delay: AppDurations.fast * (index + 1),
-                            duration: AppDurations.normal,
-                            curve: Curves.easeOutCubic,
+        // RTL around Scrollbar only → thumb sits on the physical left edge.
+        // Inner LTR keeps legal copy reading left-to-right.
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: RawScrollbar(
+            controller: _scrollController,
+            thumbVisibility: true,
+            trackVisibility: true,
+            thickness: 4,
+            radius: const Radius.circular(8),
+            padding: const EdgeInsets.only(left: 2, top: 8, bottom: 8),
+            thumbColor: KitColors.primary.withValues(alpha: 0.45),
+            trackColor: KitColors.primary.withValues(alpha: 0.08),
+            trackBorderColor: Colors.transparent,
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: DefaultTextStyle.merge(
+                style: const TextStyle(fontFamily: 'Poppins'),
+                child: ListView(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(
+                    AppDimensions.spacing16,
+                    AppDimensions.spacing16,
+                    AppDimensions.spacing12,
+                    40,
+                  ),
+                  children: [
+                    LegalHeroBanner(
+                      icon: widget.heroIcon,
+                      title: widget.heroTitle,
+                      body: widget.heroBody,
+                      badge: widget.heroBadge,
+                    )
+                        .animate()
+                        .fadeIn(duration: AppDurations.normal)
+                        .slideY(
+                          begin: 0.06,
+                          end: 0,
+                          duration: AppDurations.normal,
+                          curve: Curves.easeOutCubic,
+                        ),
+                    const SizedBox(height: AppDimensions.spacing20),
+                    ...widget.sections.asMap().entries.map(
+                      (MapEntry<int, Widget> entry) {
+                        final int index = entry.key;
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: AppDimensions.spacing16,
                           ),
-                    );
-                  }),
-                ],
+                          child: entry.value
+                              .animate()
+                              .fadeIn(
+                                delay: AppDurations.fast * (index + 1),
+                                duration: AppDurations.normal,
+                              )
+                              .slideY(
+                                begin: 0.04,
+                                end: 0,
+                                delay: AppDurations.fast * (index + 1),
+                                duration: AppDurations.normal,
+                                curve: Curves.easeOutCubic,
+                              ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -116,7 +152,7 @@ class LegalHeroBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacing24),
+      padding: const EdgeInsets.all(AppDimensions.spacing20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppDimensions.radius24),
         gradient: const LinearGradient(
@@ -202,7 +238,7 @@ class LegalHeroBanner extends StatelessWidget {
                         badge!,
                         style: TextStyle(
                           fontFamily: 'Poppins',
-                          fontSize: 11,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: KitColors.white.withValues(alpha: 0.92),
                         ),
@@ -214,9 +250,10 @@ class LegalHeroBanner extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacing20),
               Text(
                 title,
+                textAlign: TextAlign.left,
                 style: const TextStyle(
                   fontFamily: 'Poppins',
-                  fontSize: 24,
+                  fontSize: 28,
                   fontWeight: FontWeight.w700,
                   height: 1.25,
                   color: KitColors.white,
@@ -225,9 +262,10 @@ class LegalHeroBanner extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacing12),
               Text(
                 body,
+                textAlign: TextAlign.left,
                 style: TextStyle(
                   fontFamily: 'Poppins',
-                  fontSize: 14,
+                  fontSize: 16,
                   height: 1.55,
                   fontWeight: FontWeight.w400,
                   color: KitColors.white.withValues(alpha: 0.88),
@@ -279,7 +317,7 @@ class LegalSectionCard extends StatelessWidget {
         children: [
           Container(height: 3, color: accent),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -287,22 +325,23 @@ class LegalSectionCard extends StatelessWidget {
                   children: [
                     if (icon != null) ...[
                       Container(
-                        width: 36,
-                        height: 36,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: accent.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(icon, size: 18, color: accent),
+                        child: Icon(icon, size: 20, color: accent),
                       ),
                       const SizedBox(width: AppDimensions.spacing12),
                     ],
                     Expanded(
                       child: Text(
                         title,
+                        textAlign: TextAlign.left,
                         style: const TextStyle(
                           fontFamily: 'Poppins',
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           height: 1.3,
                           color: KitColors.textPrimary,
@@ -331,32 +370,16 @@ class LegalSubHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 14, bottom: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 5),
-            width: 6,
-            height: 6,
-            decoration: const BoxDecoration(
-              color: KitColors.teal,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 1.4,
-                color: KitColors.textPrimary,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        text,
+        textAlign: TextAlign.left,
+        style: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          height: 1.4,
+          color: KitColors.textPrimary,
+        ),
       ),
     );
   }
@@ -373,9 +396,10 @@ class LegalBodyText extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         text,
+        textAlign: TextAlign.left,
         style: const TextStyle(
           fontFamily: 'Poppins',
-          fontSize: 13.5,
+          fontSize: 16,
           height: 1.65,
           fontWeight: FontWeight.w400,
           color: KitColors.textSecondary,
@@ -398,9 +422,9 @@ class LegalBulletItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 7),
-            width: 5,
-            height: 5,
+            margin: const EdgeInsets.only(top: 9),
+            width: 6,
+            height: 6,
             decoration: BoxDecoration(
               color: KitColors.primary.withValues(alpha: 0.7),
               shape: BoxShape.circle,
@@ -410,9 +434,10 @@ class LegalBulletItem extends StatelessWidget {
           Expanded(
             child: Text(
               text,
+              textAlign: TextAlign.left,
               style: const TextStyle(
                 fontFamily: 'Poppins',
-                fontSize: 13.5,
+                fontSize: 16,
                 height: 1.6,
                 fontWeight: FontWeight.w400,
                 color: KitColors.textSecondary,
@@ -458,9 +483,10 @@ class LegalContactCard extends StatelessWidget {
             children: [
               Text(
                 address,
+                textAlign: TextAlign.left,
                 style: const TextStyle(
                   fontFamily: 'Poppins',
-                  fontSize: 13.5,
+                  fontSize: 16,
                   height: 1.6,
                   fontWeight: FontWeight.w500,
                   color: KitColors.textPrimary,
@@ -469,18 +495,19 @@ class LegalContactCard extends StatelessWidget {
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.email_outlined,
-                    size: 16,
+                    size: 18,
                     color: KitColors.primary,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       email.replaceFirst(RegExp(r'^(Email|E-Mail):\s*'), ''),
+                      textAlign: TextAlign.left,
                       style: const TextStyle(
                         fontFamily: 'Poppins',
-                        fontSize: 13.5,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: KitColors.primary,
                       ),
@@ -498,9 +525,10 @@ class LegalContactCard extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 4),
               child: Text(
                 line,
+                textAlign: TextAlign.left,
                 style: const TextStyle(
                   fontFamily: 'Poppins',
-                  fontSize: 12,
+                  fontSize: 14,
                   height: 1.5,
                   color: KitColors.textHint,
                 ),
