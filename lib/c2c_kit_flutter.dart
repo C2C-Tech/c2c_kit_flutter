@@ -27,6 +27,7 @@ export 'src/ui/widgets/custom_button.dart';
 export 'src/ui/widgets/custom_message.dart';
 export 'src/ui/widgets/custom_section_title.dart';
 export 'src/ui/widgets/custom_text_field.dart';
+export 'src/ui/widgets/kit_legal_links_footer.dart';
 
 // Legal
 export 'src/legal/privacy_screen.dart';

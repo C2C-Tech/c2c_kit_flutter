@@ -523,6 +523,7 @@ class _C2cSignUpViewState extends State<C2cSignUpView> {
                 ),
               ),
             ],
+            KitLegalLinksFooter(locale: widget.locale),
           ],
         ),
       ),

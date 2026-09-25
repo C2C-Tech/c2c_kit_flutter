@@ -16,6 +16,7 @@ import '../widgets/custom_section_title.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/kit_pin_field.dart';
 import '../widgets/kit_surface_card.dart';
+import '../widgets/kit_legal_links_footer.dart';
 import 'c2c_forgot_password_view.dart';
 
 /// Reusable login form. Host apps wrap this in their own route.
@@ -197,6 +198,7 @@ class _C2cLoginViewState extends State<C2cLoginView> {
                 onPressed: widget.onSignUp,
               ),
             ],
+            KitLegalLinksFooter(locale: widget.locale),
           ],
         ),
       ),

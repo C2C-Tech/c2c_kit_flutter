@@ -194,6 +194,17 @@ class KitL10n {
       );
   String get backToLogin => _t('Back to Login', 'Zurück zur Anmeldung');
 
+  /// Short labels for inline legal links on auth screens.
+  String get termsShort => _t('Terms & Conditions', 'AGB');
+  String get privacyShort =>
+      _t('Privacy Policy', 'Datenschutzrichtlinie');
+  String get legalFooterPrefix => _t(
+        'By continuing, you agree to our ',
+        'Mit der Fortsetzung stimmen Sie den ',
+      );
+  String get legalFooterAnd => _t(' and ', ' und der ');
+  String get legalFooterSuffix => _t('.', ' zu.');
+
   String fieldRequired(String field) => isGerman
       ? 'Bitte $field eingeben'
       : 'Please enter $field';
