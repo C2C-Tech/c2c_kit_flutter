@@ -61,8 +61,16 @@ class _C2cLoginViewState extends State<C2cLoginView> {
   bool _loading = false;
   bool _passkeyFlow = false;
   bool _passkeysSupported = false;
+  bool _autoPasskeyAttempted = false;
 
   KitL10n get _l10n => KitL10n(widget.locale);
+
+  bool get _shouldAutoPasskey {
+    final String email = (widget.initialEmail ?? '').trim();
+    return widget.onPasskeySuccess != null &&
+        email.isNotEmpty &&
+        email.contains('@');
+  }
 
   @override
   void initState() {
@@ -81,6 +89,12 @@ class _C2cLoginViewState extends State<C2cLoginView> {
     final bool supported = await c2cPasskeysSupported();
     if (!mounted) return;
     setState(() => _passkeysSupported = supported);
+    if (!supported || !_shouldAutoPasskey) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _autoPasskeyAttempted || _loading) return;
+      _autoPasskeyAttempted = true;
+      _continueWithPasskey();
+    });
   }
 
   @override
