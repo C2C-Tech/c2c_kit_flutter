@@ -8,10 +8,12 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
+  device_info_plus: ^13.3.0
   flutter:
     sdk: flutter
   flutter_animate: ^4.5.2
   http: ^1.6.0
+  passkeys: ^2.23.1
   pin_code_fields: ^9.4.0
   qr_flutter: ^4.1.0
 
