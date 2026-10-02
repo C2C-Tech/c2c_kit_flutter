@@ -94,3 +94,104 @@ class AuthTokensFailure extends AuthTokensResult {
   final String message;
   final int? statusCode;
 }
+
+/// One cloud passkey row from `GET /passkeys`.
+class C2cPasskey {
+  const C2cPasskey({
+    required this.passkeyId,
+    required this.platform,
+    required this.deviceLabel,
+    required this.registeredApp,
+    required this.createdAt,
+  });
+
+  final String passkeyId;
+  final String platform;
+  final String deviceLabel;
+  final String registeredApp;
+  final String createdAt;
+
+  factory C2cPasskey.fromJson(Map<String, dynamic> json) {
+    return C2cPasskey(
+      passkeyId: json['passkey_id']?.toString() ?? '',
+      platform: json['platform']?.toString() ?? '',
+      deviceLabel: json['device_label']?.toString() ?? '',
+      registeredApp: json['registered_app']?.toString() ?? '',
+      createdAt: json['created_at']?.toString() ?? '',
+    );
+  }
+}
+
+sealed class PasskeyRegisterResult {
+  const PasskeyRegisterResult();
+}
+
+class PasskeyRegisterSuccess extends PasskeyRegisterResult {
+  const PasskeyRegisterSuccess({this.passkey});
+
+  final Map<String, dynamic>? passkey;
+}
+
+class PasskeyRegisterCancelled extends PasskeyRegisterResult {
+  const PasskeyRegisterCancelled();
+}
+
+class PasskeyRegisterFailure extends PasskeyRegisterResult {
+  const PasskeyRegisterFailure({required this.message, this.statusCode});
+
+  final String message;
+  final int? statusCode;
+}
+
+sealed class PasskeyAuthResult {
+  const PasskeyAuthResult();
+}
+
+class PasskeyAuthSuccess extends PasskeyAuthResult {
+  const PasskeyAuthSuccess(this.tokens);
+
+  final AuthTokens tokens;
+}
+
+class PasskeyAuthCancelled extends PasskeyAuthResult {
+  const PasskeyAuthCancelled();
+}
+
+class PasskeyAuthFailure extends PasskeyAuthResult {
+  const PasskeyAuthFailure({required this.message, this.statusCode});
+
+  final String message;
+  final int? statusCode;
+}
+
+sealed class PasskeyListResult {
+  const PasskeyListResult();
+}
+
+class PasskeyListSuccess extends PasskeyListResult {
+  const PasskeyListSuccess(this.passkeys);
+
+  final List<C2cPasskey> passkeys;
+}
+
+class PasskeyListFailure extends PasskeyListResult {
+  const PasskeyListFailure({required this.message, this.statusCode});
+
+  final String message;
+  final int? statusCode;
+}
+
+sealed class PasskeyDeleteResult {
+  const PasskeyDeleteResult();
+}
+
+class PasskeyDeleteSuccess extends PasskeyDeleteResult {
+  const PasskeyDeleteSuccess();
+}
+
+class PasskeyDeleteFailure extends PasskeyDeleteResult {
+  const PasskeyDeleteFailure({required this.message, this.statusCode});
+
+  final String message;
+  final int? statusCode;
+}

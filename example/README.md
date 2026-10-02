@@ -1,16 +1,12 @@
 # c2c_kit_example
 
-A new Flutter project.
+Local harness for the kit. Uses `C2cApp.ppm` and English (`Locale('en')`).
 
-## Getting Started
+```bash
+cd example
+flutter run
+```
 
-This project is a starting point for a Flutter application.
+Sign in with a password or **Continue with passkey**. The signed-in screen opens **Passkeys** (`showC2cPasskeySettings`) with the cloud access token. Logout keeps the email and returns to login.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Passkey create and sign-in work in Chrome when `web/index.html` loads `bundle.js` before Flutter. Restart the web run after changing that file. The browser only completes the ceremony when the page origin is the relying party domain. `localhost` can show **Continue with passkey** and **Create passkey**, then refuse the prompt. Phone apps still need this example’s bundle id on the relying party’s Associated Domains and Digital Asset Links.

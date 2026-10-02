@@ -19,6 +19,7 @@ export 'src/ui/screens/c2c_login_view.dart';
 export 'src/ui/screens/c2c_forgot_password_view.dart';
 export 'src/ui/screens/c2c_sign_up_view.dart';
 export 'src/ui/screens/c2c_two_fa_setup_view.dart';
+export 'src/ui/screens/c2c_passkey_settings_view.dart';
 export 'src/ui/widgets/c2c_app_logo.dart';
 export 'src/ui/widgets/c2c_brand_header.dart';
 export 'src/ui/widgets/c2c_logo.dart';

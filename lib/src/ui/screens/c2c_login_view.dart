@@ -25,9 +25,11 @@ class C2cLoginView extends StatefulWidget {
     super.key,
     required this.app,
     required this.onSuccess,
+    this.onPasskeySuccess,
     this.locale = KitL10n.defaultLocale,
     this.onSignUp,
     this.initialEmail,
+    this.initialPassword,
     this.isDebugMode = false,
   });
 
@@ -35,10 +37,17 @@ class C2cLoginView extends StatefulWidget {
   final Locale locale;
   final Future<void> Function(AuthTokens tokens, String email) onSuccess;
 
+  /// Called after a passkey sign-in. The button is hidden when this is null.
+  final Future<void> Function(AuthTokens tokens, String email)?
+  onPasskeySuccess;
+
   final VoidCallback? onSignUp;
   final String? initialEmail;
 
-  /// When true, pre-fills email/password for faster local testing.
+  /// Pre-fills the password field. Used by the example harness.
+  final String? initialPassword;
+
+  /// When true, pre-fills a placeholder password when [initialPassword] is null.
   final bool isDebugMode;
 
   @override
@@ -50,6 +59,8 @@ class _C2cLoginViewState extends State<C2cLoginView> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   bool _loading = false;
+  bool _passkeyFlow = false;
+  bool _passkeysSupported = false;
 
   KitL10n get _l10n => KitL10n(widget.locale);
 
@@ -59,8 +70,17 @@ class _C2cLoginViewState extends State<C2cLoginView> {
     final debug = widget.isDebugMode;
     _emailController = TextEditingController(text: widget.initialEmail ?? "");
     _passwordController = TextEditingController(
-      text: debug ? 'c2C@123456' : '',
+      text: widget.initialPassword ?? (debug ? 'c2C@123456' : ''),
     );
+    if (widget.onPasskeySuccess != null) {
+      _loadPasskeySupport();
+    }
+  }
+
+  Future<void> _loadPasskeySupport() async {
+    final bool supported = await c2cPasskeysSupported();
+    if (!mounted) return;
+    setState(() => _passkeysSupported = supported);
   }
 
   @override
@@ -94,7 +114,10 @@ class _C2cLoginViewState extends State<C2cLoginView> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _passkeyFlow = false;
+    });
     try {
       final LoginResult result = await C2cKitAuthApi.login(
         app: widget.app,
@@ -126,6 +149,100 @@ class _C2cLoginViewState extends State<C2cLoginView> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _continueWithPasskey() async {
+    final KitL10n l10n = _l10n;
+    String email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      final String? entered = await _promptPasskeyEmail(l10n);
+      if (!mounted || entered == null) return;
+      email = entered;
+      _emailController.text = email;
+    }
+
+    setState(() {
+      _loading = true;
+      _passkeyFlow = true;
+    });
+    try {
+      final PasskeyAuthResult result =
+          await C2cKitAuthApi.authenticateWithPasskey(
+            app: widget.app,
+            email: email,
+            debugMode: widget.isDebugMode,
+          );
+      if (!mounted) return;
+      switch (result) {
+        case PasskeyAuthSuccess(:final tokens):
+          await widget.onPasskeySuccess?.call(tokens, email);
+        case PasskeyAuthCancelled():
+          break;
+        case PasskeyAuthFailure(:final message):
+          showCustomMessage(context, message, isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<String?> _promptPasskeyEmail(KitL10n l10n) {
+    final TextEditingController controller = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.passkeyEmailTitle),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.passkeyEmailBody,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: KitColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacing16),
+                  CustomTextField(
+                    label: l10n.emailAddress,
+                    l10n: l10n,
+                    controller: controller,
+                    prefixIcon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (String? value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.fieldRequired(l10n.emailAddress);
+                      }
+                      if (!value.contains('@')) return l10n.invalidEmail;
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                if (formKey.currentState?.validate() != true) return;
+                Navigator.of(dialogContext).pop(controller.text.trim());
+              },
+              child: Text(l10n.continueLabel),
+            ),
+          ],
+        );
+      },
+    ).whenComplete(controller.dispose);
   }
 
   @override
@@ -187,9 +304,18 @@ class _C2cLoginViewState extends State<C2cLoginView> {
             ),
             CustomButton(
               label: l10n.login,
-              isLoading: _loading,
+              isLoading: _loading && !_passkeyFlow,
               onPressed: _loading ? null : _submit,
             ),
+            if (_passkeysSupported && widget.onPasskeySuccess != null) ...[
+              const SizedBox(height: AppDimensions.spacing12),
+              CustomButton(
+                label: l10n.continueWithPasskey,
+                isOutlined: true,
+                isLoading: _loading && _passkeyFlow,
+                onPressed: _loading ? null : _continueWithPasskey,
+              ),
+            ],
             if (widget.onSignUp != null) ...[
               const SizedBox(height: AppDimensions.spacing12),
               CustomButton(
@@ -212,9 +338,11 @@ class C2cLoginScreen extends StatelessWidget {
     super.key,
     required this.app,
     required this.onSuccess,
+    this.onPasskeySuccess,
     this.locale = KitL10n.defaultLocale,
     this.onSignUp,
     this.initialEmail,
+    this.initialPassword,
     this.isDebugMode = false,
     this.handleTwoFaInternally = true,
   });
@@ -222,9 +350,12 @@ class C2cLoginScreen extends StatelessWidget {
   final C2cApp app;
   final Locale locale;
   final Future<void> Function(AuthTokens authTokens, String email) onSuccess;
+  final Future<void> Function(AuthTokens authTokens, String email)?
+  onPasskeySuccess;
 
   final VoidCallback? onSignUp;
   final String? initialEmail;
+  final String? initialPassword;
   final bool isDebugMode;
   final bool handleTwoFaInternally;
 
@@ -236,8 +367,10 @@ class C2cLoginScreen extends StatelessWidget {
         app: app,
         locale: locale,
         onSuccess: onSuccess,
+        onPasskeySuccess: onPasskeySuccess,
         onSignUp: onSignUp,
         initialEmail: initialEmail,
+        initialPassword: initialPassword,
         isDebugMode: isDebugMode,
       ),
     );

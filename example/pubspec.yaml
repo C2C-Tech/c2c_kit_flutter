@@ -1,5 +1,5 @@
 name: c2c_kit_example
-description: Preview for c2c_kit_flutter legal screens.
+description: Local harness for c2c_kit_flutter login and passkeys (ppm, English).
 publish_to: 'none'
 version: 1.0.0+1
 

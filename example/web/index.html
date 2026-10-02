@@ -33,6 +33,12 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <!--
+    Corbado passkeys web SDK 2.5.0 (matches passkeys 2.23.1).
+    passkeys_web closes the tab on startup unless window.PasskeyAuthenticator exists.
+    Must load before flutter_bootstrap.js. Chrome uses this script to create and sign in.
+  -->
+  <script src="bundle.js" type="application/javascript"></script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

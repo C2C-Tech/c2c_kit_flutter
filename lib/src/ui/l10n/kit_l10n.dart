@@ -24,9 +24,9 @@ class KitL10n {
   String welcomeTo(String appName) =>
       isGerman ? 'Willkommen bei $appName' : 'Welcome to $appName';
   String get createAccountSubtitle => _t(
-        'Fill in your details to create your C2C account.',
-        'Geben Sie Ihre Daten ein, um Ihr C2C-Konto zu erstellen.',
-      );
+    'Fill in your details to create your C2C account.',
+    'Geben Sie Ihre Daten ein, um Ihr C2C-Konto zu erstellen.',
+  );
   String get personalDetails => _t('Personal details', 'Persönliche Daten');
   String get address => _t('Address', 'Adresse');
   String get accountCredentials => _t('Account', 'Zugangsdaten');
@@ -36,6 +36,58 @@ class KitL10n {
   String get password => _t('Password', 'Passwort');
   String get confirmPassword => _t('Confirm Password', 'Passwort bestätigen');
   String get login => _t('Login', 'Anmelden');
+  String get continueWithPasskey =>
+      _t('Continue with passkey', 'Mit Passkey fortfahren');
+  String get passkeyEmailTitle =>
+      _t('Sign in with passkey', 'Mit Passkey anmelden');
+  String get passkeyEmailBody => _t(
+    'Enter the email address for this passkey.',
+    'Geben Sie die E-Mail-Adresse für diesen Passkey ein.',
+  );
+  String get passkeysTitle => _t('Passkeys', 'Passkeys');
+  String get passkeysSubtitle => _t(
+    'Each device keeps its own passkey. You can use it in every C2C app.',
+    'Jedes Gerät speichert einen eigenen Passkey. Er gilt in jeder C2C-App.',
+  );
+  String get savedPasskeys => _t('Saved passkeys', 'Gespeicherte Passkeys');
+  String get noPasskeyOnDevice =>
+      _t('No passkey on this device', 'Kein Passkey auf diesem Gerät');
+  String get createPasskeyHint => _t(
+    'Create a passkey for this device to sign in without your password.',
+    'Erstellen Sie einen Passkey für dieses Gerät, um sich ohne Passwort anzumelden.',
+  );
+  String get passkeyUnavailable => _t(
+    'This device cannot create a passkey.',
+    'Dieses Gerät kann keinen Passkey erstellen.',
+  );
+  String get createPasskey => _t('Create passkey', 'Passkey erstellen');
+  String get removePasskey => _t('Remove', 'Entfernen');
+  String get removePasskeyTitle =>
+      _t('Remove this passkey?', 'Diesen Passkey entfernen?');
+  String removePasskeyBody(String label) => _t(
+    '$label will no longer be able to sign in. Your other devices stay as they are.',
+    '$label kann sich danach nicht mehr anmelden. Ihre anderen Geräte bleiben unverändert.',
+  );
+  String get passkeyAdded => _t('Passkey saved', 'Passkey gespeichert');
+  String get passkeyRemoved => _t('Passkey removed', 'Passkey entfernt');
+  String registeredIn(String appName) =>
+      _t('Registered in $appName', 'Registriert in $appName');
+  String addedOn(String date) => _t('Added $date', 'Hinzugefügt am $date');
+  String get retry => _t('Try again', 'Erneut versuchen');
+  String get passkeyFallbackName => _t('this passkey', 'diesen Passkey');
+  String passkeyPlatformLabel(String platform) {
+    switch (platform) {
+      case 'ios':
+        return 'iOS';
+      case 'android':
+        return 'Android';
+      case 'web':
+        return _t('Web', 'Web');
+      default:
+        return platform;
+    }
+  }
+
   String get signUp => _t('Sign Up', 'Registrieren');
   String get forgotPassword => _t('Forgot Password?', 'Passwort vergessen?');
   String get name => _t('Name', 'Vorname');
@@ -56,23 +108,19 @@ class KitL10n {
   String get invalidEmail =>
       _t('Enter a valid email', 'Gültige E-Mail-Adresse eingeben');
   String get passwordTooShort => _t(
-        'Password should be at least 8 characters',
-        'Das Passwort muss mindestens 8 Zeichen lang sein',
-      );
+    'Password should be at least 8 characters',
+    'Das Passwort muss mindestens 8 Zeichen lang sein',
+  );
   String get passwordMinEightCharacters =>
       _t('At least 8 characters', 'Mindestens 8 Zeichen');
-  String get passwordAtLeastOneUppercase => _t(
-        'At least one uppercase letter',
-        'Mindestens ein Großbuchstabe',
-      );
+  String get passwordAtLeastOneUppercase =>
+      _t('At least one uppercase letter', 'Mindestens ein Großbuchstabe');
   String get passwordOneUppercase =>
       _t('One uppercase letter', 'Ein Großbuchstabe');
   String get passwordOneSpecialCharacter =>
       _t('One special character', 'Ein Sonderzeichen');
-  String get passwordOneSpecialCharacterMin => _t(
-        'At least one special character',
-        'Mindestens ein Sonderzeichen',
-      );
+  String get passwordOneSpecialCharacterMin =>
+      _t('At least one special character', 'Mindestens ein Sonderzeichen');
   String get passwordsDoNotMatch =>
       _t("Passwords didn't match", 'Passwörter stimmen nicht überein');
   String get twoFactorAuth =>
@@ -80,96 +128,92 @@ class KitL10n {
   String get loginTwoFaTitle =>
       _t('Verify your identity', 'Identität bestätigen');
   String get loginTwoFaTotpSubtitle => _t(
-        'Enter the 6-digit code from your authenticator app to continue.',
-        'Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein, um fortzufahren.',
-      );
+    'Enter the 6-digit code from your authenticator app to continue.',
+    'Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein, um fortzufahren.',
+  );
   String get verify => _t('Verify', 'Verifizieren');
   String get cancel => _t('Cancel', 'Abbrechen');
   String get continueLabel => _t('Continue', 'Weiter');
   String get completeSixDigitCode => _t(
-        'Please enter the complete 6-digit code.',
-        'Bitte geben Sie den vollständigen 6-stelligen Code ein.',
-      );
+    'Please enter the complete 6-digit code.',
+    'Bitte geben Sie den vollständigen 6-stelligen Code ein.',
+  );
   String get twoFaChooseMethod => _t('Choose a method', 'Methode wählen');
   String get twoFaChooseMethodSubtitle => _t(
-        'Select how you want to receive verification codes.',
-        'Wählen Sie, wie Sie Verifizierungscodes erhalten möchten.',
-      );
+    'Select how you want to receive verification codes.',
+    'Wählen Sie, wie Sie Verifizierungscodes erhalten möchten.',
+  );
   String get twoFaAuthenticatorApp =>
       _t('Authenticator App', 'Authenticator-App');
   String get twoFaAuthenticatorAppSubtitle => _t(
-        'Use an app like Google Authenticator or Authy.',
-        'Nutzen Sie eine App wie Google Authenticator oder Authy.',
-      );
+    'Use an app like Google Authenticator or Authy.',
+    'Nutzen Sie eine App wie Google Authenticator oder Authy.',
+  );
   String get twoFaEmailMethod => _t('Email', 'E-Mail');
   String get twoFaEmailMethodSubtitle => _t(
-        'Receive a verification code by email.',
-        'Erhalten Sie einen Verifizierungscode per E-Mail.',
-      );
+    'Receive a verification code by email.',
+    'Erhalten Sie einen Verifizierungscode per E-Mail.',
+  );
   String get twoFaScanQrTitle => _t('Scan QR code', 'QR-Code scannen');
   String get twoFaScanQrSubtitle => _t(
-        'Scan this QR code with your authenticator app, or enter the secret manually.',
-        'Scannen Sie diesen QR-Code mit Ihrer Authenticator-App oder geben Sie den Schlüssel manuell ein.',
-      );
-  String get twoFaManualSecret =>
-      _t('Manual entry key', 'Manueller Schlüssel');
+    'Scan this QR code with your authenticator app, or enter the secret manually.',
+    'Scannen Sie diesen QR-Code mit Ihrer Authenticator-App oder geben Sie den Schlüssel manuell ein.',
+  );
+  String get twoFaManualSecret => _t('Manual entry key', 'Manueller Schlüssel');
   String get twoFaSecretCopied => _t(
-        'Secret copied to clipboard',
-        'Schlüssel in die Zwischenablage kopiert',
-      );
+    'Secret copied to clipboard',
+    'Schlüssel in die Zwischenablage kopiert',
+  );
   String get twoFaEnterTotpCodeSubtitle => _t(
-        'Enter the 6-digit code from your authenticator app.',
-        'Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.',
-      );
+    'Enter the 6-digit code from your authenticator app.',
+    'Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.',
+  );
   String get twoFaDisableTitle => _t(
-        'Disable two-factor authentication',
-        'Zwei-Faktor-Authentifizierung deaktivieren',
-      );
-  String twoFaAlreadyEnabledTitle(String method) => _t(
-        '2FA is enabled via $method',
-        '2FA ist über $method aktiviert',
-      );
+    'Disable two-factor authentication',
+    'Zwei-Faktor-Authentifizierung deaktivieren',
+  );
+  String twoFaAlreadyEnabledTitle(String method) =>
+      _t('2FA is enabled via $method', '2FA ist über $method aktiviert');
   String get twoFaAlreadyEnabledSubtitle => _t(
-        'Your account is already protected with two-factor authentication. Do you want to remove it?',
-        'Ihr Konto ist bereits mit Zwei-Faktor-Authentifizierung geschützt. Möchten Sie sie entfernen?',
-      );
+    'Your account is already protected with two-factor authentication. Do you want to remove it?',
+    'Ihr Konto ist bereits mit Zwei-Faktor-Authentifizierung geschützt. Möchten Sie sie entfernen?',
+  );
   String get twoFaConfirmDisable =>
       _t('Yes, disable 2FA', 'Ja, 2FA deaktivieren');
   String get twoFaEnabledBadge => _t('Enabled', 'Aktiviert');
   String get twoFaDisableEmailSubtitle => _t(
-        'Enter the verification code sent to your email to disable 2FA.',
-        'Geben Sie den an Ihre E-Mail gesendeten Code ein, um 2FA zu deaktivieren.',
-      );
+    'Enter the verification code sent to your email to disable 2FA.',
+    'Geben Sie den an Ihre E-Mail gesendeten Code ein, um 2FA zu deaktivieren.',
+  );
   String get twoFaDisableTotpSubtitle => _t(
-        'Enter the code from your authenticator app to disable 2FA.',
-        'Geben Sie den Code aus Ihrer Authenticator-App ein, um 2FA zu deaktivieren.',
-      );
+    'Enter the code from your authenticator app to disable 2FA.',
+    'Geben Sie den Code aus Ihrer Authenticator-App ein, um 2FA zu deaktivieren.',
+  );
   String get twoFaDisable => _t('Disable 2FA', '2FA deaktivieren');
   String get twoFaResendCode => _t('Resend code', 'Code erneut senden');
-  String twoFaResendCodeIn(int seconds) => _t(
-        'Resend code in ${seconds}s',
-        'Code erneut senden in ${seconds}s',
-      );
+  String twoFaResendCodeIn(int seconds) =>
+      _t('Resend code in ${seconds}s', 'Code erneut senden in ${seconds}s');
   String get twoFaEmailCodeSent =>
       _t('Verification code sent', 'Verifizierungscode gesendet');
   String get twoFaEnabledSuccess => _t(
-        'Two-factor authentication enabled',
-        'Zwei-Faktor-Authentifizierung aktiviert',
-      );
+    'Two-factor authentication enabled',
+    'Zwei-Faktor-Authentifizierung aktiviert',
+  );
   String get twoFaDisabledSuccess => _t(
-        'Two-factor authentication disabled',
-        'Zwei-Faktor-Authentifizierung deaktiviert',
-      );
+    'Two-factor authentication disabled',
+    'Zwei-Faktor-Authentifizierung deaktiviert',
+  );
   String get somethingWentWrong =>
       _t('Something went wrong', 'Etwas ist schiefgelaufen');
-  String get codeVerification =>
-      _t('Code Verification', 'Code Verifizierung');
+  String get codeVerification => _t('Code Verification', 'Code Verifizierung');
   String get emailVerification =>
       _t('Email Verification', 'E-Mail-Verifizierung');
   String get completeVerification =>
       _t('Complete Verification', 'Verifizierung abschließen');
-  String get initializationFailed =>
-      _t('Registration could not be started.', 'Registrierung konnte nicht gestartet werden.');
+  String get initializationFailed => _t(
+    'Registration could not be started.',
+    'Registrierung konnte nicht gestartet werden.',
+  );
 
   // Forgot / Reset password
   String get resetPassword => _t('Reset Password', 'Passwort zurücksetzen');
@@ -178,36 +222,31 @@ class KitL10n {
       _t('Confirm New Password', 'Neues Passwort bestätigen');
   String get sendCode => _t('Send Code', 'Code senden');
   String get verifyCode => _t('Verify Code', 'Code verifizieren');
-  String get forgotPasswordTitle =>
-      _t('Forgot Password', 'Passwort vergessen');
+  String get forgotPasswordTitle => _t('Forgot Password', 'Passwort vergessen');
   String get forgotPasswordSubtitle => _t(
-        'Enter your email address and we will send you a verification code.',
-        'Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Verifizierungscode.',
-      );
+    'Enter your email address and we will send you a verification code.',
+    'Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Verifizierungscode.',
+  );
   String get codeSent =>
       _t('Verification code sent', 'Verifizierungscode gesendet');
   String get codeVerified =>
       _t('Code verified successfully', 'Code erfolgreich verifiziert');
-  String get passwordResetSuccess => _t(
-        'Password reset successfully',
-        'Passwort erfolgreich zurückgesetzt',
-      );
+  String get passwordResetSuccess =>
+      _t('Password reset successfully', 'Passwort erfolgreich zurückgesetzt');
   String get backToLogin => _t('Back to Login', 'Zurück zur Anmeldung');
 
   /// Short labels for inline legal links on auth screens.
   String get termsShort => _t('Terms & Conditions', 'AGB');
-  String get privacyShort =>
-      _t('Privacy Policy', 'Datenschutzrichtlinie');
+  String get privacyShort => _t('Privacy Policy', 'Datenschutzrichtlinie');
   String get legalFooterPrefix => _t(
-        'By continuing, you agree to our ',
-        'Mit der Fortsetzung stimmen Sie den ',
-      );
+    'By continuing, you agree to our ',
+    'Mit der Fortsetzung stimmen Sie den ',
+  );
   String get legalFooterAnd => _t(' and ', ' und der ');
   String get legalFooterSuffix => _t('.', ' zu.');
 
-  String fieldRequired(String field) => isGerman
-      ? 'Bitte $field eingeben'
-      : 'Please enter $field';
+  String fieldRequired(String field) =>
+      isGerman ? 'Bitte $field eingeben' : 'Please enter $field';
 
   String loginTwoFaEmailSubtitle(String email) => isGerman
       ? 'Geben Sie den 6-stelligen Code ein, der an $email gesendet wurde, um fortzufahren.'

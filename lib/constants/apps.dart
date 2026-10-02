@@ -45,6 +45,14 @@ enum C2cApp {
     C2cApp.authenticator => Icons.verified_user_outlined,
   };
 
+  /// Display name for a stored `Application-ID`, or [applicationId] when unknown.
+  static String nameForApplicationId(String applicationId) {
+    for (final C2cApp app in C2cApp.values) {
+      if (app.applicationId == applicationId) return app.name;
+    }
+    return applicationId;
+  }
+
   /// Value sent as the `Application-ID` request header.
   String get applicationId => switch (this) {
     C2cApp.maintenance => 'maintenance',

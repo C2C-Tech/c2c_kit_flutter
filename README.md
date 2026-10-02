@@ -133,6 +133,17 @@ C2cLoginScreen(
 
 Uses the built-in kit logo (`C2cLogo` / `assets/c2c_logo.png`).
 
+Passkey sign-in is on the same form when the host passes `onPasskeySuccess`. `initialEmail` fills the email field; if that field is empty the kit asks for an email. The button is hidden when the device cannot use passkeys.
+
+```dart
+C2cLoginView(
+  app: C2cApp.ppm,
+  initialEmail: savedEmail,
+  onSuccess: handleKitLoginSuccess,
+  onPasskeySuccess: handleKitLoginSuccess,
+)
+```
+
 Handles login 2FA internally (`C2cLoginTwoFaView`) and forgot password
 (`C2cForgotPasswordScreen`) — no host callback needed. Use `C2cLoginView` if
 you only need the form body.
@@ -161,6 +172,49 @@ showC2cTwoFaSetup(
   refreshToken: storedRefreshToken,
   currentMethod: existingMethod, // null = enable, non-null = disable
   userEmail: email,
+);
+```
+
+### Passkeys
+
+Create and sign-in work on iOS, Android, and the web. List and delete work over HTTP, so this browser can remove a passkey that was registered on a phone.
+
+Hosts still configure the relying party themselves. The relying party id comes from the register/authenticate begin response (`rp.id` / `rpId`), not from the kit:
+
+1. iOS Associated Domains: `webcredentials:<rpId>`
+2. iOS Face ID usage string when the system asks for it
+3. Android Digital Asset Links for this app's package name and SHA-256 on that same domain
+
+Do not add the `passkeys` package in the host. Do not store a `passkeyEnabled` flag. One cloud user shares passkeys across ppm, maintenance, and authenticator.
+
+Web apps must still load the passkeys browser SDK in `web/index.html`, before `flutter_bootstrap.js`. Without it, `passkeys_web` closes the tab on startup (`Passkeys Web SDK not loaded`). Copy `example/web/bundle.js` into the host `web/` folder (Corbado bundle 2.5.0, the file shipped with `passkeys` 2.23.1):
+
+```html
+<script src="bundle.js" type="application/javascript"></script>
+<script src="flutter_bootstrap.js" async></script>
+```
+
+A full restart is required after changing `index.html`. The page must be served on the relying party domain (`WEBAUTHN_RP_ID` or a subdomain of it). A local `localhost` run can show the button, and the browser will refuse the ceremony until the origin matches that domain.
+
+```dart
+await showC2cPasskeySettings(
+  context,
+  app: C2cApp.ppm,
+  accessToken: cloudAccessToken!,
+  locale: locale,
+);
+```
+
+The screen lists `GET /passkeys` and removes a row with `DELETE /passkeys/<passkey_id>`. Remove does not open Face ID or fingerprint. Add calls `C2cKitAuthApi.registerPasskey` (cloud access token, no new login tokens).
+
+```dart
+final PasskeyAuthResult result = await C2cKitAuthApi.authenticateWithPasskey(
+  app: C2cApp.ppm,
+  email: email,
+);
+final PasskeyListResult list = await C2cKitAuthApi.listPasskeys(
+  app: C2cApp.ppm,
+  cloudAccessToken: cloudAccessToken!,
 );
 ```
 
