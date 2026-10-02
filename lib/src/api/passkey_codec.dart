@@ -25,11 +25,39 @@ Map<String, dynamic> passkeyRegisterDeviceBody({
   return body;
 }
 
-/// WebAuthn options with the cloud `sessionId` removed.
+/// WebAuthn options ready for the passkeys package.
+///
+/// Strips cloud `sessionId` and ensures credential descriptors expose a
+/// `transports` list. The package requires `List<String>`; the server often
+/// omits the optional WebAuthn field on `allowCredentials`.
 Map<String, dynamic> passkeyOptionsWithoutSession(Map<String, dynamic> json) {
   final Map<String, dynamic> copy = Map<String, dynamic>.from(json);
   copy.remove('sessionId');
+  for (final String key in <String>['allowCredentials', 'excludeCredentials']) {
+    final dynamic raw = copy[key];
+    if (raw is! List) continue;
+    copy[key] = raw.map(_normalizeCredentialDescriptor).toList();
+  }
   return copy;
+}
+
+/// Ensures one PublicKeyCredentialDescriptor has `transports: List`.
+dynamic _normalizeCredentialDescriptor(dynamic item) {
+  if (item is! Map) return item;
+  final Map<String, dynamic> credential = Map<String, dynamic>.from(item);
+  final dynamic transports = credential['transports'];
+  if (transports == null) {
+    credential['transports'] = <String>[];
+  } else if (transports is String) {
+    credential['transports'] = <String>[transports];
+  } else if (transports is! List) {
+    credential['transports'] = <String>[];
+  } else {
+    credential['transports'] = transports
+        .map((dynamic e) => e.toString())
+        .toList();
+  }
+  return credential;
 }
 
 /// Session id from a begin response, or null when it is missing.

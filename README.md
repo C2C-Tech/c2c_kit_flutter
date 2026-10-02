@@ -179,22 +179,50 @@ showC2cTwoFaSetup(
 
 Create and sign-in work on iOS, Android, and the web. List and delete work over HTTP, so this browser can remove a passkey that was registered on a phone.
 
-Hosts still configure the relying party themselves. The relying party id comes from the register/authenticate begin response (`rp.id` / `rpId`), not from the kit:
+Do not add the `passkeys` package in the host. Do not store a `passkeyEnabled` flag.
 
-1. iOS Associated Domains: `webcredentials:<rpId>`
-2. iOS Face ID usage string when the system asks for it
-3. Android Digital Asset Links for this app's package name and SHA-256 on that same domain
+The relying party id is the hostname of **this app’s deployed web dashboard** (no scheme, no path). A dashboard at `https://dashboard.example.com` means `rp.id` is `dashboard.example.com`. Set the server `WEBAUTHN_RP_ID` and `WEBAUTHN_ORIGIN` to that deploy. `localhost` can show the buttons, and the browser refuses the ceremony until the page is that host.
 
-Do not add the `passkeys` package in the host. Do not store a `passkeyEnabled` flag. One cloud user shares passkeys across ppm, maintenance, and authenticator.
+Each host app must ship these files in its Flutter `web` folder. The deploy serves them at the well-known URLs:
 
-Web apps must still load the passkeys browser SDK in `web/index.html`, before `flutter_bootstrap.js`. Without it, `passkeys_web` closes the tab on startup (`Passkeys Web SDK not loaded`). Copy `example/web/bundle.js` into the host `web/` folder (Corbado bundle 2.5.0, the file shipped with `passkeys` 2.23.1):
+| File | Live URL |
+|------|----------|
+| `web/.well-known/apple-app-site-association` | `https://<dashboard host>/.well-known/apple-app-site-association` |
+| `web/.well-known/assetlinks.json` | `https://<dashboard host>/.well-known/assetlinks.json` |
+
+`apple-app-site-association` has no extension. Serve it as `application/json`. Put this app’s Apple team id and iOS bundle id in it, and set the iOS Associated Domains entitlement to `webcredentials:<dashboard host>`. Add the Face ID usage string when iOS asks for it.
+
+```json
+{
+  "webcredentials": {
+    "apps": ["<Apple Team ID>.<iOS bundle id>"]
+  }
+}
+```
+
+`assetlinks.json` uses this app’s Android `applicationId` and the release SHA-256 (the Play app-signing certificate when Play App Signing is on).
+
+```json
+[
+  {
+    "relation": ["delegate_permission/common.get_login_creds"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "<applicationId>",
+      "sha256_cert_fingerprints": ["<release SHA-256>"]
+    }
+  }
+]
+```
+
+Web apps must also load the passkeys browser SDK in `web/index.html`, before `flutter_bootstrap.js`. Without it, `passkeys_web` closes the tab on startup (`Passkeys Web SDK not loaded`). Copy `example/web/bundle.js` into the host `web/` folder (Corbado bundle 2.5.0, the file shipped with `passkeys` 2.23.1):
 
 ```html
 <script src="bundle.js" type="application/javascript"></script>
 <script src="flutter_bootstrap.js" async></script>
 ```
 
-A full restart is required after changing `index.html`. The page must be served on the relying party domain (`WEBAUTHN_RP_ID` or a subdomain of it). A local `localhost` run can show the button, and the browser will refuse the ceremony until the origin matches that domain.
+A full restart is required after changing `index.html`. One cloud user can sign in to ppm, maintenance, and authenticator when each app’s dashboard is associated with the same relying party host.
 
 ```dart
 await showC2cPasskeySettings(
@@ -205,7 +233,7 @@ await showC2cPasskeySettings(
 );
 ```
 
-The screen lists `GET /passkeys` and removes a row with `DELETE /passkeys/<passkey_id>`. Remove does not open Face ID or fingerprint. Add calls `C2cKitAuthApi.registerPasskey` (cloud access token, no new login tokens).
+When this device has no passkey, the screen shows **Create passkey** and registers one for this device only. Saved passkeys are listed under **Saved passkeys**. Remove calls `DELETE /passkeys/<passkey_id>` and does not open Face ID or fingerprint. Create calls `C2cKitAuthApi.registerPasskey` (cloud access token, no new login tokens).
 
 ```dart
 final PasskeyAuthResult result = await C2cKitAuthApi.authenticateWithPasskey(

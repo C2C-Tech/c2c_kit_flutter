@@ -1,6 +1,7 @@
 import 'package:c2c_kit_flutter/src/api/models.dart';
 import 'package:c2c_kit_flutter/src/api/passkey_codec.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:passkeys/types.dart';
 
 void main() {
   test('strips sessionId before the passkey package sees options', () {
@@ -19,6 +20,57 @@ void main() {
     expect(options.containsKey('sessionId'), isFalse);
     expect(options['challenge'], 'abc');
     expect(options['rpId'], 'c2ccloud.vercel.app');
+  });
+
+  test('fills missing credential transports for the passkeys package', () {
+    final Map<String, dynamic> options = passkeyOptionsWithoutSession(
+      <String, dynamic>{
+        'challenge': 'abc',
+        'rpId': 'c2c-immoverwaltung-dashboard.web.app',
+        'sessionId': 'eyJ-session',
+        'allowCredentials': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 'BPqkRtRW5fIRAz8GUhLFzA',
+            'type': 'public-key',
+          },
+          <String, dynamic>{
+            'id': 'other',
+            'type': 'public-key',
+            'transports': 'internal',
+          },
+          <String, dynamic>{
+            'id': 'kept',
+            'type': 'public-key',
+            'transports': <String>['hybrid'],
+          },
+        ],
+        'excludeCredentials': <Map<String, dynamic>>[
+          <String, dynamic>{'id': 'reg', 'type': 'public-key'},
+        ],
+      },
+    );
+
+    expect(options.containsKey('sessionId'), isFalse);
+
+    final List<dynamic> allow = options['allowCredentials'] as List<dynamic>;
+    expect((allow[0] as Map<String, dynamic>)['transports'], <String>[]);
+    expect((allow[1] as Map<String, dynamic>)['transports'], <String>[
+      'internal',
+    ]);
+    expect((allow[2] as Map<String, dynamic>)['transports'], <String>[
+      'hybrid',
+    ]);
+
+    final List<dynamic> exclude =
+        options['excludeCredentials'] as List<dynamic>;
+    expect((exclude.single as Map<String, dynamic>)['transports'], <String>[]);
+
+    final AuthenticateRequestType request = AuthenticateRequestType.fromJson(
+      options,
+    );
+    expect(request.allowCredentials, isNotNull);
+    expect(request.allowCredentials!.length, 3);
+    expect(request.allowCredentials!.first.transports, isEmpty);
   });
 
   test('maps authenticate/finish onto AuthTokens', () {
