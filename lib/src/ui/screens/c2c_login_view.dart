@@ -93,7 +93,7 @@ class _C2cLoginViewState extends State<C2cLoginView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _autoPasskeyAttempted || _loading) return;
       _autoPasskeyAttempted = true;
-      _continueWithPasskey();
+      _continueWithPasskey(showErrors: false);
     });
   }
 
@@ -165,7 +165,7 @@ class _C2cLoginViewState extends State<C2cLoginView> {
     }
   }
 
-  Future<void> _continueWithPasskey() async {
+  Future<void> _continueWithPasskey({bool showErrors = true}) async {
     final KitL10n l10n = _l10n;
     String email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
@@ -193,7 +193,9 @@ class _C2cLoginViewState extends State<C2cLoginView> {
         case PasskeyAuthCancelled():
           break;
         case PasskeyAuthFailure(:final message):
-          showCustomMessage(context, message, isError: true);
+          if (showErrors) {
+            showCustomMessage(context, message, isError: true);
+          }
       }
     } finally {
       if (mounted) setState(() => _loading = false);

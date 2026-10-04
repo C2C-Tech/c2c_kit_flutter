@@ -133,7 +133,7 @@ C2cLoginScreen(
 
 Uses the built-in kit logo (`C2cLogo` / `assets/c2c_logo.png`).
 
-Passkey sign-in is on the same form when the host passes `onPasskeySuccess`. `initialEmail` fills the email field; if that field is empty the kit asks for an email. When `initialEmail` is a valid email and passkeys are supported, the screen auto-starts **Continue with passkey** once after load so the system prompt opens without a tap. The button is hidden when the device cannot use passkeys.
+Passkey sign-in is on the same form when the host passes `onPasskeySuccess`. `initialEmail` fills the email field; if that field is empty the kit asks for an email. When `initialEmail` is a valid email and passkeys are supported, the screen auto-starts **Continue with passkey** once after load so the system prompt opens without a tap. Auto-start failures stay silent (loading only); tapping the button still shows errors. The button is hidden when the device cannot use passkeys.
 
 ```dart
 C2cLoginView(
