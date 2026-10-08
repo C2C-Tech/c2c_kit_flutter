@@ -11,7 +11,7 @@ enum C2cApp {
     punchLineDe: 'Jedes Asset stets in Betrieb.',
   ),
   ppm(
-    name: 'Immobilienverwaltung',
+    name: 'ProMan',
     logoPath: 'assets/ppm_icon.png',
     punchLineEn: 'Plan, prevent, maintain.',
     punchLineDe: 'Planen, vorbeugen, instandhalten.',
